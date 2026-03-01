@@ -1,4 +1,5 @@
 # Rhythm Theory (RT) — Release Package
+Where do the constants of physics come from — the numbers nature refuses to negotiate? Can Rhythm Theory carry the answer?
 
 Author: Bo Fremling
 
