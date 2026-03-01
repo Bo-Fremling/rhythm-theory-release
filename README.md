@@ -1,24 +1,29 @@
+# Rhythm Theory (RT) — Release Package
 
-## GitHub Release description (kort, engelska)
+Author: Bo Fremling
 
-**Title:** `Rhythm Theory Release v1.0.1 (English)`
+This repository hosts release archives of the Rhythm Theory (RT) project.
 
-**Body:**
+## Download
 
-```md
-Release archive for external review.
+Go to the Releases page and download the latest zip archive.
 
-How to run:
-1) Unzip
-2) cd Release/
-3) bash verify_all.sh
+## Verify
 
-Expected result:
-ALL_VERIFY: PASS
-Outputs include:
-- 00_TOP/LOCKS/SM_PARAM_INDEX/SM_29_REPORT.md
-- out/SM29_PAGES.md
+1. Unzip the archive.
+2. cd Release/
+3. Run: bash verify_all.sh
 
-Note:
-A strict optional check exists:
-CORE_OVERLAY_OFF=1 bash verify_all.sh
+If verification passes, the run will generate (among other artifacts):
+
+* 00_TOP/LOCKS/SM_PARAM_INDEX/SM_29_REPORT.md
+* out/SM29_PAGES.md
+
+## What this is
+
+A reproducible, review-friendly package with strict separation between:
+
+* Core (no-facit / no-target influence)
+* Compare/Overlay (reference values used only after Core)
+
+See Release/START_HERE.md inside the archive for the canonical reading path.
