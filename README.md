@@ -14,7 +14,7 @@ A central viewpoint is PP→RP projection: PP is the internal state space; RP is
 
 For a one-page overview, see WHAT_IS_RT.md.
 
-This repository hosts release archives of the Rhythm Theory (RT) project.
+This repository hosts release archives of the Rhythm Theory (RT).
 
 [![RT](rt_cover_ab_view.png)]
 
