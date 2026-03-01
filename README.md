@@ -2,6 +2,17 @@
 
 Author: Bo Fremling
 
+## What is RT?
+
+Rhythm Theory (RT) is a deterministic, geometric framework with strict reproducibility and a hard separation between:
+
+* Core (no-facit): generates candidates without reference/target influence.
+* Compare/Overlay: used only afterwards for comparison to references.
+
+A central viewpoint is PP→RP projection: PP is the internal state space; RP is the measurement/projection screen.
+
+For a one-page overview, see WHAT_IS_RT.md.
+
 This repository hosts release archives of the Rhythm Theory (RT) project.
 
 ## Download
