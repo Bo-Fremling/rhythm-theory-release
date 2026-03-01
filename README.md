@@ -27,3 +27,7 @@ A reproducible, review-friendly package with strict separation between:
 * Compare/Overlay (reference values used only after Core)
 
 See Release/START_HERE.md inside the archive for the canonical reading path.
+
+Use the attached BoFremling_RhythmTheory_Release_v1.0.1.zip as the official release package. 
+
+## Ignore the auto-generated “Source code” archives.
