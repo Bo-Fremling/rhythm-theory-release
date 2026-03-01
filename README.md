@@ -16,6 +16,8 @@ For a one-page overview, see WHAT_IS_RT.md.
 
 This repository hosts release archives of the Rhythm Theory (RT) project.
 
+[![RT](rt_cover_ab_view.png)]
+
 ## Download
 
 Go to the Releases page and download the latest zip archive.
