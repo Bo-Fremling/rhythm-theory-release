@@ -31,6 +31,9 @@ If verification passes, the run will generate (among other artifacts):
 * 00_TOP/LOCKS/SM_PARAM_INDEX/SM_29_REPORT.md
 * out/SM29_PAGES.md
 
+The ones you see on code page is my published snapshot (see it as example output).
+Pleace Reproduce it by downloading the official Release asset and running: bash verify_all.sh
+
 ## What this is
 
 A reproducible, review-friendly package with strict separation between:
