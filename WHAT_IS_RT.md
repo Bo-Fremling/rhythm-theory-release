@@ -1,6 +1,5 @@
-## 1) WHAT_IS_RT.md
-
 # What is Rhythm Theory (RT)?
+*Who wrote the numbers into the world? Rhythm Theory asks where the constants come from — and whether geometry can explain them.*
 
 Rhythm Theory (RT) is a deterministic, geometric framework built around a strict separation between:
 
