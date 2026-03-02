@@ -1,0 +1,232 @@
+{
+  "meta": {
+    "note": "NOT a Core input. Used only for \u2705/\u274c/\ud83d\udfe1 marking against external references.",
+    "scope": "Overlay-only reference numbers for data-match triage in SM_29_REPORT.md",
+    "sources": {
+      "alpha": "CODATA 2022 (Rev. Mod. Phys. 97, 025002 (2025))",
+      "ckm": "PDG 2025 CKM matrix review",
+      "ew_g": "Derived identity check from \u03b1_ref and RT sin^2\u03b8_W=1/4 (not independent data).",
+      "kappa": "Frozen overlay value (internal)",
+      "lepton_masses": "PDG 2025 particle listings (electron/muon/tau)",
+      "neutrino_dm2": "Triage ranges (placeholder; update to PDG)",
+      "pmns": "PDG 2025 neutrino mixing review (NO best-fit + 3\u03c3 ranges)",
+      "quark_ratios": "PDG-ish running masses; stored as broad ranges (overlay-only).",
+      "theta_qcd": "RT structural claim (\u03b8_QCD=0)"
+    },
+    "version": "v0.3"
+  },
+  "refs": {
+    "alpha": {
+      "comment": "CODATA 2022 recommended value",
+      "tol_rel": 1e-08,
+      "unit": "dimensionless",
+      "value": 0.0072973525643
+    },
+    "ckm_J": {
+      "comment": "From PDG 2025: J = 3.12\u00d710^-5 (tol ~5%)",
+      "tol_rel": 0.05,
+      "unit": "dimensionless",
+      "value": 3.12e-05
+    },
+    "ckm_delta_deg": {
+      "comment": "From PDG 2025: \u03b4 = 1.147(26) rad (tol\u22483\u03c3)",
+      "tol_abs": 4.5,
+      "unit": "deg",
+      "value": 65.73
+    },
+    "ckm_theta12_deg": {
+      "comment": "From PDG 2025: sin\u03b812 = 0.22501(68)",
+      "tol_abs": 0.05,
+      "unit": "deg",
+      "value": 12.997
+    },
+    "ckm_theta13_deg": {
+      "comment": "From PDG 2025: sin\u03b813 = 0.003732(55)",
+      "tol_abs": 0.01,
+      "unit": "deg",
+      "value": 0.214
+    },
+    "ckm_theta23_deg": {
+      "comment": "From PDG 2025: sin\u03b823 = 0.04183(69)",
+      "tol_abs": 0.03,
+      "unit": "deg",
+      "value": 2.397
+    },
+    "ew_g_tree_Q0": {
+      "comment": "Identity/consistency check (not an independent measurement): g_tree from EW_COUPLING_LOCK (derived from \u03b1_ref + sin^2\u03b8_W=1/4).",
+      "tol_rel": 1e-10,
+      "unit": "dimensionless",
+      "value": 0.6056442415366898
+    },
+    "higgs_struct_gate": {
+      "comment": "Higgs/EW structural gate (HIGGS_VEV_LOCK PASS_STRUCT; no numeric v,mH yet).",
+      "tol_abs": 0.0,
+      "unit": "bool",
+      "value": 1.0
+    },
+    "kappa_L_m_per_RT": {
+      "comment": "Frozen \u03ba_L (overlay-only). Consistency check that the freeze value is present and stable.",
+      "tol_rel": 0.0,
+      "unit": "m/RT",
+      "value": 1.0897727757392728e-15
+    },
+    "m_b_over_m_s": {
+      "comment": "Derived inverse range for mb/ms from m_s_over_m_b.",
+      "range": [
+        28.57142857142857,
+        66.66666666666667
+      ],
+      "unit": "ratio"
+    },
+    "m_c_over_m_t": {
+      "comment": "Broad range for mc/mt (running-mass proxy).",
+      "range": [
+        0.005,
+        0.01
+      ],
+      "unit": "ratio"
+    },
+    "m_d_over_m_s": {
+      "comment": "Broad range for md/ms (running-mass proxy).",
+      "range": [
+        0.03,
+        0.07
+      ],
+      "unit": "ratio"
+    },
+    "m_e": {
+      "comment": "PDG 2025: 0.51099895000(15) MeV",
+      "tol_rel": 1e-08,
+      "unit": "MeV",
+      "value": 0.51099895
+    },
+    "m_mu": {
+      "comment": "PDG 2025: 105.6583755(23) MeV",
+      "tol_rel": 1e-06,
+      "unit": "MeV",
+      "value": 105.6583755
+    },
+    "m_s_over_m_b": {
+      "comment": "Broad range for ms/mb (running-mass proxy).",
+      "range": [
+        0.015,
+        0.035
+      ],
+      "unit": "ratio"
+    },
+    "m_t_over_m_b": {
+      "comment": "Broad range for mt/mb (running-mass proxy).",
+      "range": [
+        30.0,
+        60.0
+      ],
+      "unit": "ratio"
+    },
+    "m_t_over_m_c": {
+      "comment": "Derived inverse range for mt/mc from m_c_over_m_t.",
+      "range": [
+        100.0,
+        200.0
+      ],
+      "unit": "ratio"
+    },
+    "m_tau": {
+      "comment": "PDG 2025: 1776.93(09) MeV",
+      "tol_rel": 0.0005,
+      "unit": "MeV",
+      "value": 1776.93
+    },
+    "m_u_over_m_c": {
+      "comment": "Broad range for mu/mc (running-mass proxy).",
+      "range": [
+        0.0008,
+        0.0035
+      ],
+      "unit": "ratio"
+    },
+    "nu_dm21_eV2": {
+      "comment": "\u0394m^2_21 (NO) triage range; placeholder until PDG numbers are pinned",
+      "range": [
+        6.8e-05,
+        8e-05
+      ],
+      "unit": "eV^2",
+      "value": 7.4e-05
+    },
+    "nu_dm2_gate": {
+      "comment": "Derived gate: PASS if nu_dm21_eV2 and nu_dm31_eV2 are both inside their triage ranges",
+      "tol_abs": 0.0,
+      "unit": "bool",
+      "value": 1.0
+    },
+    "nu_dm31_eV2": {
+      "comment": "\u0394m^2_31 (NO) triage range; placeholder until PDG numbers are pinned",
+      "range": [
+        0.0023,
+        0.0027
+      ],
+      "unit": "eV^2",
+      "value": 0.0025
+    },
+    "pmns_delta_deg": {
+      "comment": "PDG 2025 (NO) \u03b4_CP is near ~200\u00b0; triage window is intentionally broad (placeholder; refine to PDG 3\u03c3).",
+      "range": [
+        120.0,
+        300.0
+      ],
+      "unit": "deg",
+      "value": 195.0
+    },
+    "pmns_theta12_deg": {
+      "comment": "PDG 2025 (NO): \u03b812 best-fit 33.68\u00b0, 3\u03c3 [31.63, 35.95]",
+      "range": [
+        31.63,
+        35.95
+      ],
+      "unit": "deg",
+      "value": 33.68
+    },
+    "pmns_theta13_deg": {
+      "comment": "PDG 2025 (NO): \u03b813 best-fit 8.52\u00b0, 3\u03c3 [8.11, 8.96]",
+      "range": [
+        8.11,
+        8.96
+      ],
+      "unit": "deg",
+      "value": 8.52
+    },
+    "pmns_theta23_deg": {
+      "comment": "PDG 2025 (NO): \u03b823 best-fit 48.5\u00b0, 3\u03c3 [40.1, 51.7]",
+      "range": [
+        40.1,
+        51.7
+      ],
+      "unit": "deg",
+      "value": 48.5
+    },
+    "ppn_beta": {
+      "comment": "GR-kontroll i Overlay: \u03b2_PPN = 1",
+      "tol_abs": 0.0,
+      "unit": "dimensionless",
+      "value": 1.0
+    },
+    "ppn_gamma": {
+      "comment": "GR-kontroll i Overlay: \u03b3_PPN = 1",
+      "tol_abs": 0.0,
+      "unit": "dimensionless",
+      "value": 1.0
+    },
+    "strong_proxy_gate": {
+      "comment": "Proxy gate for strong sector (currently: HADRON_PROXY_LOCK verify PASS; overlay integrity only).",
+      "tol_abs": 0.0,
+      "unit": "bool",
+      "value": 1.0
+    },
+    "theta_qcd_deg": {
+      "comment": "RT structural claim: \u03b8_QCD = 0 (structure-lock, not a data-fit).",
+      "tol_abs": 0.0,
+      "unit": "deg",
+      "value": 0.0
+    }
+  }
+}

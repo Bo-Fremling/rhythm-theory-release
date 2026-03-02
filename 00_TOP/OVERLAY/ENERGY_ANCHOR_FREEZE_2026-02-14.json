@@ -1,0 +1,14 @@
+{
+  "frozen": {
+    "anchor_id": "e:m1",
+    "anchor_value": 0.51099895069,
+    "unit": "MeV"
+  },
+  "gate": {
+    "pass": true,
+    "reason": "created"
+  },
+  "notes": "Overlay freeze record for exactly one energy anchor. Core remains dimensionless.",
+  "ref_sha256": "db89da429d5973f9b0d1898a05cc457b07802247e6b931e1ffc2fe174d2ad979",
+  "version": "v0.1"
+}

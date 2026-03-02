@@ -1,0 +1,32 @@
+{
+  "title": "RytmTeorin (RT) — Public Release (FULL)",
+  "author": {
+    "name": "Bo Fremling"
+  },
+  "version": "v1.0.1",
+  "release_date": "2026-03-01",
+  "entrypoints": {
+    "quickstart": "START_HERE.md",
+    "verify": "verify_all.sh"
+  },
+  "generated_outputs_included": [
+    "out/SM29_PAGES.md",
+    "out/SM_PARAM_INDEX/sm29_data_match_summary_v0_1.md",
+    "out/SM_PARAM_INDEX/sm29_data_match_v0_1.json"
+  ],
+  "policies": [
+    "Core vs Compare separation (no-facit): Core must not read 00_TOP/OVERLAY/** or *reference*.json",
+    "Deterministic verification scripts with negative controls"
+  ],
+  "license": {
+    "spdx": "MIT",
+    "file": "LICENSE"
+  },
+  "provenance_files": [
+    "PROVENANCE.md",
+    "PRIOR_ART.md",
+    "CITATION.cff",
+    "AUTHORS",
+    "NOTICE"
+  ]
+}

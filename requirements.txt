@@ -1,0 +1,4 @@
+# Minimal runtime dependencies for running verification + viewers.
+# Python: 3.8+
+numpy>=1.20
+matplotlib>=3.3

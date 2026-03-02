@@ -1,0 +1,16 @@
+{
+  "Z0_ohm": 376.730313412,
+  "Z0_unc_ohm": 5.9e-08,
+  "date": "2026-02-13",
+  "not_used_for": [
+    "core_derivation",
+    "core_parameter_tuning"
+  ],
+  "role": "external_reference_only",
+  "scope": "OVERLAY",
+  "source": "NIST CODATA 2022 (physics.nist.gov Value?z0=)",
+  "used_for": [
+    "comparison",
+    "consistency_check"
+  ]
+}

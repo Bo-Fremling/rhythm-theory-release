@@ -1,0 +1,47 @@
+{
+  "masses": {
+    "m_K_pm": {
+      "note": "PDG RPP2024 listing",
+      "sigma": 0.013,
+      "value": 493.677
+    },
+    "m_n": {
+      "note": "PDG RPP2024",
+      "sigma": 5.4e-07,
+      "value": 939.56542052
+    },
+    "m_p": {
+      "note": "PDG RPP2024",
+      "sigma": 2.9e-07,
+      "value": 938.27208816
+    },
+    "m_pi_pm": {
+      "note": "PDG RPP2024 weighted average",
+      "sigma": 0.00017,
+      "value": 139.57039
+    },
+    "m_rho_770_0": {
+      "note": "PDG RPP2024 neutral e+e- average",
+      "sigma": 0.23,
+      "value": 775.26
+    }
+  },
+  "meta": {
+    "created_utc": "2026-02-15",
+    "id": "hadron_mass_reference_v0_1",
+    "policy": "Overlay-only reference values; dimensionless ratios may be used in locks. No SI constants in Core.",
+    "sources": {
+      "mK": "PDG RPP2024 charged kaon mass listing",
+      "mp_mn": "PDG RPP2024 physical constants (mp, mn)",
+      "mpi": "PDG RPP2024 pi\u00b1 MASS listing",
+      "mrho": "PDG RPP2024 rho(770) MASS listing (neutral e+e- average)"
+    },
+    "units": "MeV"
+  },
+  "ratios_to_mp": {
+    "m_K_over_m_p": 0.5261554790232822,
+    "m_n_over_m_p": 1.0013784193053599,
+    "m_pi_over_m_p": 0.14875257589054444,
+    "m_rho_over_m_p": 0.8262635218322704
+  }
+}

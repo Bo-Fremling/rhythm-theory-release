@@ -1,0 +1,17 @@
+{
+  "alpha": 0.0072973525643,
+  "alpha_inv": 137.035999177,
+  "date": "2026-02-13",
+  "not_used_for": [
+    "core_derivation",
+    "core_parameter_tuning"
+  ],
+  "role": "external_reference_only",
+  "scope": "OVERLAY",
+  "source": "NIST CODATA 2022 (physics.nist.gov Value?alph= and wall_2022.pdf)",
+  "std_unc_alpha": 1.1e-12,
+  "used_for": [
+    "comparison",
+    "consistency_check"
+  ]
+}

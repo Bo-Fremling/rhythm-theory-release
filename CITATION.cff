@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this release in academic work, please cite it as below."
+title: "RytmTeorin (RT) — Public Release (FULL)"
+version: "v1.0.1"
+date-released: "2026-03-01"
+license: "MIT"
+authors:
+  - family-names: "Fremling"
+    given-names: "Bo"
+keywords:
+  - "RytmTeorin"
+  - "Rhythm Theory"
+  - "RT"
+  - "no-facit"
+  - "deterministic verification"
+preferred-citation:
+  type: software
+  authors:
+    - family-names: "Fremling"
+      given-names: "Bo"
+  title: "RytmTeorin (RT) — Public Release (FULL)"
+  version: "v1.0.1"
+  date-released: "2026-03-01"

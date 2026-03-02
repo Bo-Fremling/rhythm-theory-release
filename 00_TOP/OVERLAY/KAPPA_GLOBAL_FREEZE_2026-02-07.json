@@ -1,0 +1,63 @@
+{
+  "kappa_L_m_per_RT": 1.089772775739273e-15,
+  "kappa_L_fm_per_RT": 1.0897727757392728,
+  "kappa_T_s_per_RT_timeunit": 3.635090699110492e-24,
+  "freeze_date": "2026-02-07",
+  "anchor": {
+    "observable": "rE_p_fm",
+    "target_fm": 0.8414
+  },
+  "run": {
+    "script": "01_V6_ARCHIVE/tools/lowQ2/rt_lowq2_em_realdata_ci.py",
+    "version": "rt_lowq2_em_realdata_ci_measuremap_v1",
+    "best_point": {
+      "eta": -480.0,
+      "phi0": 5.533333333333333,
+      "ab_phase": 0.02,
+      "gm_map": "pp2d",
+      "gm_kernel": "j1norm",
+      "wander_mode": "mu_profile"
+    },
+    "wander": {
+      "turns": 64,
+      "subsamples": 24,
+      "coh_len": 12.0,
+      "sigma_theta": 0.08,
+      "sigma_j": 0.01,
+      "A": 1.0,
+      "B": 0.15,
+      "eps1": 0.02,
+      "eps3": 0.04
+    },
+    "seeds": [
+      1337,
+      2025,
+      7777
+    ],
+    "per_seed": [
+      {
+        "seed": 1337,
+        "r2_all_core": 0.5960919904651764,
+        "kappa_L_fm_per_RT": 1.0897976435409404,
+        "kappa_L_m_per_RT": 1.0897976435409405e-15
+      },
+      {
+        "seed": 2025,
+        "r2_all_core": 0.5960704139317831,
+        "kappa_L_fm_per_RT": 1.0898173675885627,
+        "kappa_L_m_per_RT": 1.0898173675885628e-15
+      },
+      {
+        "seed": 7777,
+        "r2_all_core": 0.596195193367787,
+        "kappa_L_fm_per_RT": 1.089703316088315,
+        "kappa_L_m_per_RT": 1.089703316088315e-15
+      }
+    ],
+    "stats": {
+      "mean_kappa_L_fm_per_RT": 1.0897727757392728,
+      "pstdev_kappa_L_fm_per_RT": 4.9771088307921226e-05,
+      "rel_ppm": 45.67106961738684
+    }
+  }
+}

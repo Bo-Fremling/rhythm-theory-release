@@ -1,0 +1,13 @@
+{
+  "kappa_L_m_per_RT": 1.0897727757392728e-15,
+  "kappa_L_fm_per_RT": 1.0897727757392728,
+  "kappa_T_s_per_RT": 3.6350906991104915e-24,
+  "freeze_source": "00_TOP/OVERLAY/KAPPA_GLOBAL_FREEZE_2026-02-07.json",
+  "freeze_date": "2026-02-07",
+  "policy": {
+    "scope": "OVERLAY_ONLY",
+    "core_rule": "No SI numbers/anchors in Core. κ is a posteriori only.",
+    "usage_rule": "All scripts must read κ from this file. CI must FAIL if missing.",
+    "notes": "κ_T is stored as a convention (κ_T=κ_L/c) for overlay time-mapping if needed."
+  }
+}

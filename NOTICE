@@ -1,0 +1,8 @@
+RytmTeorin (RT) — Reference Implementation & Verification Package
+Author: Bo Fremling
+
+This repository is provided as an open standard reference implementation for
+independent verification and reproduction. See:
+- START_HERE.md
+- PROVENANCE.md
+- PRIOR_ART.md

@@ -1,0 +1,270 @@
+{
+  "meta": {
+    "compare_index": "out/COMPARE_SM29_INDEX/sm29_compare_index_v0_9.json",
+    "generated": "2026-03-01T07:34:32Z",
+    "reference_file": "00_TOP/OVERLAY/sm29_data_reference_v0_2.json",
+    "version": "v0.4"
+  },
+  "results": {
+    "alpha": {
+      "delta": -1.2514980371469697e-12,
+      "delta_rel": -1.715002839892278e-10,
+      "icon": "\u2705",
+      "note": "tol_rel=1e-08; candidate-set compare: OK if any candidate matches tolerance",
+      "ref": 0.0072973525643,
+      "status": "PASS",
+      "unit": "dimensionless",
+      "value": 0.007297352563048502
+    },
+    "ckm_J": {
+      "delta": 1.4582753746862414e-06,
+      "delta_rel": 0.04673959534250774,
+      "icon": "\u2705",
+      "note": "tol_rel=0.05",
+      "ref": 3.12e-05,
+      "status": "PASS",
+      "unit": "dimensionless",
+      "value": 3.265827537468624e-05
+    },
+    "ckm_delta_deg": {
+      "delta": 0.36287488705529825,
+      "delta_rel": 0.0055206889860839525,
+      "icon": "\u2705",
+      "note": "tol_abs=4.5",
+      "ref": 65.73,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 66.0928748870553
+    },
+    "ckm_theta12_deg": {
+      "delta": -0.0067670506061787705,
+      "delta_rel": -0.0005206625072077226,
+      "icon": "\u2705",
+      "note": "tol_abs=0.05",
+      "ref": 12.997,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 12.990232949393821
+    },
+    "ckm_theta13_deg": {
+      "delta": 0.009903703213373721,
+      "delta_rel": 0.04627898697838188,
+      "icon": "\u2705",
+      "note": "tol_abs=0.01",
+      "ref": 0.214,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 0.22390370321337372
+    },
+    "ckm_theta23_deg": {
+      "delta": -0.0029157401736625843,
+      "delta_rel": -0.0012164122543440068,
+      "icon": "\u2705",
+      "note": "tol_abs=0.03",
+      "ref": 2.397,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 2.394084259826337
+    },
+    "ew_g_tree_Q0": {
+      "delta": -5.1934123668218035e-11,
+      "delta_rel": -8.575021457555108e-11,
+      "icon": "\u2705",
+      "note": "tol_rel=1e-10; candidate-set compare: OK if any candidate matches tolerance",
+      "ref": 0.6056442415366898,
+      "status": "PASS",
+      "unit": "dimensionless",
+      "value": 0.6056442414847557
+    },
+    "higgs_struct_gate": {
+      "delta": 0.0,
+      "delta_rel": 0.0,
+      "icon": "\u2705",
+      "note": "bool; structural gate (no numeric compare)",
+      "ref": 1.0,
+      "status": "PASS",
+      "unit": "bool",
+      "value": 1.0
+    },
+    "kappa_L_m_per_RT": {
+      "delta": 0.0,
+      "delta_rel": 0.0,
+      "icon": "\u2705",
+      "note": "RT=1.08977e-15 m/RT; ref=1.08977e-15 m/RT; \u0394=0 m/RT; |\u0394|/ref\u22640",
+      "ref": 1.0897727757392728e-15,
+      "status": "PASS",
+      "unit": "m/RT",
+      "value": 1.0897727757392728e-15
+    },
+    "m_b_over_m_s": {
+      "delta": null,
+      "delta_rel": null,
+      "icon": "\u2705",
+      "note": "range[28.57142857142857,66.66666666666667]; quark ratio compare via QUARK_PROXY_LOCK candidate-space (overlay-only validation; no feedback)",
+      "ref": null,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 39.76104727845208
+    },
+    "m_c_over_m_t": {
+      "delta": null,
+      "delta_rel": null,
+      "icon": "\u2705",
+      "note": "range[0.005,0.01]; quark ratio compare via QUARK_PROXY_LOCK candidate-space (overlay-only validation; no feedback)",
+      "ref": null,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 0.009826781467410095
+    },
+    "m_d_over_m_s": {
+      "delta": null,
+      "delta_rel": null,
+      "icon": "\u2705",
+      "note": "range[0.03,0.07]; quark ratio compare via QUARK_PROXY_LOCK candidate-space (overlay-only validation; no feedback)",
+      "ref": null,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 0.06264604169480811
+    },
+    "m_mu_over_m_e": {
+      "delta": 0.00014964339183620723,
+      "delta_rel": 7.23725078498301e-07,
+      "icon": "\u2705",
+      "note": "tol_rel=1.0099999999999999e-06; lepton mass ratio compare (overlay-only)",
+      "ref": 206.76828298766566,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 206.7684326310575
+    },
+    "m_s_over_m_b": {
+      "delta": null,
+      "delta_rel": null,
+      "icon": "\u2705",
+      "note": "range[0.015,0.035]; quark ratio compare via QUARK_PROXY_LOCK candidate-space (overlay-only validation; no feedback)",
+      "ref": null,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 0.025150242975162662
+    },
+    "m_t_over_m_c": {
+      "delta": null,
+      "delta_rel": null,
+      "icon": "\u2705",
+      "note": "range[100.0,200.0]; quark ratio compare via QUARK_PROXY_LOCK candidate-space (overlay-only validation; no feedback)",
+      "ref": null,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 101.76271888374005
+    },
+    "m_tau_over_m_mu": {
+      "delta": 0.00034189841880660765,
+      "delta_rel": 2.0329687448084512e-05,
+      "icon": "\u2705",
+      "note": "tol_rel=0.000501; lepton mass ratio compare (overlay-only)",
+      "ref": 16.817691844978253,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 16.81803374339706
+    },
+    "m_u_over_m_c": {
+      "delta": null,
+      "delta_rel": null,
+      "icon": "\u2705",
+      "note": "range[0.0008,0.0035]; quark ratio compare via QUARK_PROXY_LOCK candidate-space (overlay-only validation; no feedback)",
+      "ref": null,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 0.002878062244256836
+    },
+    "nu_dm2_ratio_31_over_21": {
+      "delta": -1.6726726726726753,
+      "delta_rel": -0.04951111111111118,
+      "icon": "\u2705",
+      "note": "range[28.749999999999996,39.70588235294118]; neutrino pattern compare via \u0394m\u00b2 ratio (overlay-only)",
+      "ref": 33.78378378378379,
+      "status": "PASS",
+      "unit": "ratio",
+      "value": 32.111111111111114
+    },
+    "pmns_delta_deg": {
+      "delta": -12.458807504478727,
+      "delta_rel": -0.06389132053578835,
+      "icon": "\u2705",
+      "note": "range[120.0,300.0]",
+      "ref": 195.0,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 182.54119249552127
+    },
+    "pmns_theta12_deg": {
+      "delta": 0.09630798905398308,
+      "delta_rel": 0.0028595008626479536,
+      "icon": "\u2705",
+      "note": "range[31.63,35.95]",
+      "ref": 33.68,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 33.77630798905398
+    },
+    "pmns_theta13_deg": {
+      "delta": 0.4137523191618797,
+      "delta_rel": 0.048562478774868516,
+      "icon": "\u2705",
+      "note": "range[8.11,8.96]",
+      "ref": 8.52,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 8.93375231916188
+    },
+    "pmns_theta23_deg": {
+      "delta": -5.4143960584138995,
+      "delta_rel": -0.11163703213224535,
+      "icon": "\u2705",
+      "note": "range[40.1,51.7]",
+      "ref": 48.5,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 43.0856039415861
+    },
+    "ppn_beta": {
+      "delta": 0.0,
+      "delta_rel": 0.0,
+      "icon": "\u2705",
+      "note": "tol_abs=0.0",
+      "ref": 1.0,
+      "status": "PASS",
+      "unit": "dimensionless",
+      "value": 1.0
+    },
+    "ppn_gamma": {
+      "delta": 0.0,
+      "delta_rel": 0.0,
+      "icon": "\u2705",
+      "note": "tol_abs=0.0",
+      "ref": 1.0,
+      "status": "PASS",
+      "unit": "dimensionless",
+      "value": 1.0
+    },
+    "strong_proxy_gate": {
+      "delta": 0.0,
+      "delta_rel": 0.0,
+      "icon": "\u2705",
+      "note": "bool; structural gate (no numeric compare)",
+      "ref": 1.0,
+      "status": "PASS",
+      "unit": "bool",
+      "value": 1.0
+    },
+    "theta_qcd_deg": {
+      "delta": 0.0,
+      "delta_rel": null,
+      "icon": "\u2705",
+      "note": "tol_abs=0.0",
+      "ref": 0.0,
+      "status": "PASS",
+      "unit": "deg",
+      "value": 0.0
+    }
+  }
+}

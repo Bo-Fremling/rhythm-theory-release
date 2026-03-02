@@ -1,0 +1,5 @@
+Base: rt_v7_master_v10_18_SM29_RIGOR_VERIFY_v0_1_2026-02-14.zip
+Overlay: rt_v7_master_v10_18_SM29_DATAMATCH_v0_1.zip
+This zip is a pure zip-merge (no extraction), so long filenames from 01_V6_ARCHIVE are preserved.
+Contains: RIGOR_VERIFY + RT-motsvarighet triage + DataMatch (✅/❌/🟡) table in SM_29_REPORT.md.
+Policy: Do NOT run FLAVOR_LOCK --full here; use provided v0.9 artifacts + flavor_lock_verify.py.
