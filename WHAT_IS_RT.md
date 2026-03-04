@@ -37,6 +37,7 @@ Steps:
 1. Unzip the archive.
 2. cd Release/
 3. Run: bash verify_all.sh
+4. or on windows verify_all.py
 
 Expected:
 
