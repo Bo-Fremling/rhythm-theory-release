@@ -26,7 +26,8 @@ Go to the Releases page and download the latest zip archive.
 
 1. Unzip the archive.
 2. cd Release/
-3. Run: bash verify_all.sh
+3. linux. Run: bash verify_all.sh
+4. Windows Run: python3.exe verify_all.py
 
 If verification passes, the run will generate (among other artifacts):
 
