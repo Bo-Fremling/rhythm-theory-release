@@ -21,13 +21,16 @@ This repository hosts release archives of the Rhythm Theory (RT).
 ## Download
 
 Go to the Releases page and download the latest zip archive.
+> **Windows users:** do not start from this `main` branch.  
+> Go to the **`Release` branch** for the runnable public release and the Windows/Python verification path.
+
 
 ## Verify
 
 1. Unzip the archive.
 2. cd Release/
 3. linux. Run: bash verify_all.sh
-4. Windows Run: python3.exe verify_all.py
+4. Windows Go to the Release branch and read, then Run: python verify/verify_all.py
 
 If verification passes, the run will generate (among other artifacts):
 
