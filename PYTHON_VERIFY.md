@@ -1,39 +1,58 @@
-# Python verification entrypoints
+# Python verification
 
-A cross-platform Python path is available in parallel with the existing bash wrappers.
+A cross-platform Python verifier is available directly in the **Release root**.
 
 ## Full verification
 
+### Windows
+
 ```bash
-python verify/verify_all.py
+python verify_all.py
+```
+
+### Linux / Ubuntu / WSL
+
+```bash
+python3 verify_all.py
 ```
 
 ## Core only
 
+### Windows
+
 ```bash
-python verify/verify_core.py
+python verify_all.py --core-only
+```
+
+### Linux / Ubuntu / WSL
+
+```bash
+python3 verify_all.py --core-only
 ```
 
 ## Compare only
 
+### Windows
+
 ```bash
-python verify/verify_compare.py
+python verify_all.py --compare-only
+```
+
+### Linux / Ubuntu / WSL
+
+```bash
+python3 verify_all.py --compare-only
 ```
 
 ## Why this exists
 
-The original top-level entrypoints are bash wrappers:
-- `verify_all.sh`
-- `verify_core.sh`
-- `verify_compare.sh`
+`verify_all.py` runs the same verification pipeline as the release bash entrypoint, but without requiring a bash-first workflow.
+This is especially useful on Windows or on systems where shell setup adds unnecessary friction.
 
-Those work well on Ubuntu/Linux, but can be noisy on Windows.
-The Python entrypoints are meant to reduce that shell friction without changing the verification logic.
+## Related entrypoints
 
-## Recommended use
-
-- **Ubuntu/Linux:** `bash verify_all.sh` is still fine.
-- **Windows 11:** prefer `python verify/verify_all.py` after installing dependencies.
+- Linux / WSL alternative: `bash verify_all.sh`
+- Linux / WSL optional split wrappers: `bash verify_core.sh`, `bash verify_compare.sh`
 
 ## Expected final line
 

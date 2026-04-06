@@ -7,7 +7,7 @@ For verification scope, see `VERIFY.md`.
 ## Tested baseline
 
 - **Ubuntu 20.04**: known-good path
-- **Windows 11**: can work, but the cleanest route is **WSL (Ubuntu)**
+- **Windows 11**: supported; **WSL (Ubuntu)** is still the cleanest route
 
 ## Python
 
@@ -16,24 +16,30 @@ Use **Python 3.8+**.
 Install minimal runtime dependencies:
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 Current minimal dependencies:
 - `numpy>=1.20`
 - `matplotlib>=3.3`
 
-## Ubuntu 20.04 / Linux
+## Ubuntu 20.04 / Linux / WSL
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-bash verify_all.sh
+python3 verify_all.py
 ```
 
 Alternative:
+
+```bash
+bash verify_all.sh
+```
+
+Optional split wrappers:
 
 ```bash
 bash verify_core.sh
@@ -48,35 +54,25 @@ bash verify_compare.sh
 2. Open the repo inside WSL.
 3. Run the same commands as on Ubuntu/Linux.
 
-This is the recommended path because the current top-level verification entrypoints are bash wrappers.
+This is still the cleanest route if you want the least shell and path noise.
 
 ### Native Windows path
 
-Native Windows can work, but may produce extra shell-related noise if `bash` is not available.
-
-Suggested setup:
-
-1. Install **Python 3.8+**
+1. Install **Python 3.8+**.
 2. Install dependencies:
 
 ```powershell
-py -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-3. If `bash` is available (for example through Git Bash), run:
+3. Run verification:
 
 ```powershell
-bash verify_all.sh
-```
-
-4. If `bash` is **not** available, use:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\verify_all.ps1
+python verify_all.py
 ```
 
 ## Notes
 
-- `verify_all.sh`, `verify_core.sh`, and `verify_compare.sh` are bash entrypoints.
-- On Windows, **WSL is preferred** for the cleanest verification experience.
+- `verify_all.py` is the cross-platform verifier in the Release root.
+- `verify_all.sh`, `verify_core.sh`, and `verify_compare.sh` remain available as bash entrypoints on Linux / WSL.
 - The release zip under GitHub Releases is still the exact published release snapshot. These repo docs are there to make setup clearer.

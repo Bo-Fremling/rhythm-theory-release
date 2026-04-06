@@ -86,10 +86,38 @@ This folder (**Release/**) is intended to be the **only public root**.
 
 ## Quick start
 
-Run from the **Release root** (the directory that contains `00_TOP/`):
+Run from the **Release root** (the directory that contains `00_TOP/`).
+
+Install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Run verification:
+
+### Windows
+
+```bash
+python verify_all.py
+```
+
+### Linux / Ubuntu / WSL
+
+```bash
+python3 verify_all.py
+```
+
+Alternative on Linux / WSL:
 
 ```bash
 bash verify_all.sh
+```
+
+Expected final line:
+
+```text
+ALL_VERIFY: PASS
 ```
 
 This runs, in order:
