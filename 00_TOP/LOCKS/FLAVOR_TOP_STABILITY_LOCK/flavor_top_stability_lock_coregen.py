@@ -7,7 +7,7 @@ Goal
 
 Policy
   - Core-only: must not read 00_TOP/OVERLAY/** or any *reference*.json.
-  - Must not use --full.
+  - Full scan is allowed and is the default canonical mode in this branch.
 
 What is checked
   Canonical is FLAVOR_LOCK v0.9 artefacts produced by flavor_lock_coregen.py
@@ -34,7 +34,6 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
 
-# Import FLAVOR core construction directly (core-only, no overlay reads).
 FL_DIR = REPO / "00_TOP" / "LOCKS" / "FLAVOR_LOCK"
 if str(FL_DIR) not in sys.path:
     sys.path.insert(0, str(FL_DIR))
@@ -68,6 +67,9 @@ def _pick_fields_enu(obj: dict) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--full", dest="full", action="store_true", help="larger scan (default)")
+    ap.add_argument("--no-full", dest="full", action="store_false", help="smaller scan")
+    ap.set_defaults(full=True)
     ap.add_argument("--top_small", type=int, default=16)
     ap.add_argument("--top_canon", type=int, default=32)
     ap.add_argument("--seed", type=int, default=1337)
@@ -79,8 +81,6 @@ def main() -> int:
 
     out_p = out / "flavor_top_stability_core_v0_1.json"
 
-    # Fast path: if a previous PASS artefact already exists and matches the
-    # requested params, reuse it to keep the Core suite runtime bounded.
     if out_p.exists():
         try:
             prev = _load_json(out_p)
@@ -90,6 +90,7 @@ def main() -> int:
                 and (prev.get("params") or {}).get("top_small") == args.top_small
                 and (prev.get("params") or {}).get("top_canon") == args.top_canon
                 and (prev.get("params") or {}).get("seed") == args.seed
+                and bool((prev.get("params") or {}).get("full")) is bool(args.full)
             )
             if ok:
                 print(f"REUSED: {out}")
@@ -106,20 +107,29 @@ def main() -> int:
     canon_ud = _load_json(canon_ud_p)
     canon_enu = _load_json(canon_enu_p)
 
-    # Re-run at smaller top.
-    # Use canonical d-ratios for avoid_d_ratios so the test only measures
-    # top-sensitivity (not a changed avoidance input).
+    issues: list[str] = []
+    scan_ud = canon_ud.get("scan") or {}
+    scan_enu = canon_enu.get("scan") or {}
+    requested_full = bool(args.full)
+
+    if bool(scan_ud.get("full")) is not requested_full or bool(scan_enu.get("full")) is not requested_full:
+        issues.append("canonical_full_mismatch")
+    if int(scan_ud.get("top", -1)) != int(args.top_canon) or int(scan_enu.get("top", -1)) != int(args.top_canon):
+        issues.append("canonical_top_mismatch")
+    if int(scan_ud.get("seed", -1)) != int(args.seed) or int(scan_enu.get("seed", -1)) != int(args.seed):
+        issues.append("canonical_seed_mismatch")
+    if scan_ud.get("tiebreak") != "cost_then_choice_lex_v0_1" or scan_enu.get("tiebreak") != "cost_then_choice_lex_v0_1":
+        issues.append("canonical_tiebreak_unexpected")
+
     avoid = (canon_ud["d"]["ratios"]["m1_over_m2"], canon_ud["d"]["ratios"]["m2_over_m3"])
 
-    small_ud = run_ud(full=False, top=args.top_small, seed=args.seed)
-    small_enu = run_enu(full=False, top=args.top_small, seed=args.seed, avoid_d_ratios=avoid)
+    small_ud = run_ud(full=args.full, top=args.top_small, seed=args.seed)
+    small_enu = run_enu(full=args.full, top=args.top_small, seed=args.seed, avoid_d_ratios=avoid)
 
     canon_ud_pick = _pick_fields_ud(canon_ud)
     canon_enu_pick = _pick_fields_enu(canon_enu)
     small_ud_pick = _pick_fields_ud(small_ud)
     small_enu_pick = _pick_fields_enu(small_enu)
-
-    issues: list[str] = []
 
     if small_ud_pick != canon_ud_pick:
         issues.append("top_small_changes_ud_preferred")
@@ -128,8 +138,13 @@ def main() -> int:
 
     payload = {
         "version": "v0_1",
-        "policy": {"no_facit": True, "forbidden_fullscan": True},
-        "params": {"top_small": args.top_small, "top_canon": args.top_canon, "seed": args.seed},
+        "policy": {"no_facit": True, "fullscan_allowed": True},
+        "params": {
+            "top_small": args.top_small,
+            "top_canon": args.top_canon,
+            "seed": args.seed,
+            "full": bool(args.full),
+        },
         "status": "PASS" if not issues else "FAIL",
         "issues": issues,
         "canonical": {"ud": canon_ud_pick, "enu": canon_enu_pick},

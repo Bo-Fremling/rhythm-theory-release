@@ -12,7 +12,7 @@ Why this is stronger than re-running
 
 Policy
   - Core-only: must not read 00_TOP/OVERLAY/** or any *reference*.json.
-  - Must not use --full.
+  - Full scan is allowed and is the default canonical mode in this branch.
 
 What is checked
   1) Canonical FLAVOR_LOCK artefacts exist in out/CORE_FLAVOR_LOCK and report
@@ -56,6 +56,9 @@ def _name_loads(fn: ast.FunctionDef, ident: str) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--full", dest="full", action="store_true", help="larger scan (default)")
+    ap.add_argument("--no-full", dest="full", action="store_false", help="smaller scan")
+    ap.set_defaults(full=True)
     ap.add_argument("--seed_canon", type=int, default=1337)
     ap.add_argument("--seeds_alt", type=str, default="1338,1339")
     args = ap.parse_args()
@@ -64,7 +67,6 @@ def main() -> int:
     out_dir = repo / "out" / "CORE_FLAVOR_MULTI_SEED_STABILITY_LOCK"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1) Require canonical artifacts and expected tiebreak tag.
     canon_dir = repo / "out" / "CORE_FLAVOR_LOCK"
     canon_ud_p = canon_dir / "flavor_ud_core_v0_9.json"
     canon_enu_p = canon_dir / "flavor_enu_core_v0_9.json"
@@ -77,37 +79,43 @@ def main() -> int:
     scan_enu = canon_enu.get("scan") or {}
 
     issues: list[str] = []
+    requested_full = bool(args.full)
+
     if int(scan_ud.get("seed", -1)) != int(args.seed_canon) or int(scan_enu.get("seed", -1)) != int(args.seed_canon):
         issues.append("canonical_seed_mismatch")
     if scan_ud.get("tiebreak") != "cost_then_choice_lex_v0_1" or scan_enu.get("tiebreak") != "cost_then_choice_lex_v0_1":
         issues.append("canonical_tiebreak_unexpected")
-    if scan_ud.get("full") is not False or scan_enu.get("full") is not False:
-        issues.append("canonical_fullscan_true")
+    if bool(scan_ud.get("full")) is not requested_full or bool(scan_enu.get("full")) is not requested_full:
+        issues.append("canonical_full_mismatch")
 
-    # 2) Structural seed-unused proof for sector_scan.
     src_path = repo / "00_TOP" / "LOCKS" / "FLAVOR_LOCK" / "flavor_lock_run.py"
     src = src_path.read_text(encoding="utf-8")
     mod = ast.parse(src)
     fn = _find_func(mod, "sector_scan")
     if fn is None:
         issues.append("sector_scan_not_found")
+        seed_loads = None
     else:
-        if _name_loads(fn, "seed") != 0:
+        seed_loads = _name_loads(fn, "seed")
+        if seed_loads != 0:
             issues.append("seed_is_used_in_sector_scan")
 
-    # 3) Minimal source sanity: the deterministic sort key should mention choice key.
     if "results.sort" not in src or "_choice_key" not in src:
         issues.append("deterministic_sort_key_not_detected")
 
     payload = {
         "version": "v0_2",
-        "policy": {"no_facit": True, "forbidden_fullscan": True},
-        "params": {"seed_canon": args.seed_canon, "seeds_alt": args.seeds_alt},
+        "policy": {"no_facit": True, "fullscan_allowed": True},
+        "params": {
+            "seed_canon": args.seed_canon,
+            "seeds_alt": args.seeds_alt,
+            "full": bool(args.full),
+        },
         "status": "PASS" if not issues else "FAIL",
         "issues": issues,
         "canonical_meta": {"ud_scan": scan_ud, "enu_scan": scan_enu},
         "proof": {
-            "sector_scan_seed_loads": 0 if fn is None else _name_loads(fn, "seed"),
+            "sector_scan_seed_loads": seed_loads,
             "source_checked": str(src_path.relative_to(repo)).replace("\\", "/"),
             "reason": "If sector_scan does not read seed and tie-break is lex(choice), then preferred is seed-invariant for any seed set.",
         },

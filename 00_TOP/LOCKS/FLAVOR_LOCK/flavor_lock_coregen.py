@@ -4,7 +4,10 @@
 Genererar deterministiska kandidater och skriver ENDAST till out/CORE_FLAVOR_LOCK/.
 
 NOTES
-- Förbjudet att köra --full i projektet (använd v0.9 artefaktläge).
+- Full scan is allowed.
+- The earlier HARD FAIL on --full was a practical workaround for a constrained execution environment.
+- Full scan is the default again because the reduced scan can distort the flavor outcome,
+  especially in the up/down sector.
 """
 
 from __future__ import annotations
@@ -13,7 +16,6 @@ import argparse
 import json
 from pathlib import Path
 
-# Reuse the existing core logic (no overlay reads)
 from flavor_lock_run import (
     ensure_dir,
     make_summary,
@@ -29,11 +31,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--top", type=int, default=32, help="keep top-N per sector before pairing")
     ap.add_argument("--seed", type=int, default=1337, help="deterministic tie-break seed")
-    ap.add_argument("--full", action="store_true", help="FORBIDDEN (do not use)")
+    ap.add_argument("--full", dest="full", action="store_true", help="larger scan (default)")
+    ap.add_argument("--no-full", dest="full", action="store_false", help="smaller scan")
+    ap.set_defaults(full=True)
     args = ap.parse_args()
-
-    if args.full:
-        raise SystemExit("HARD FAIL: --full is forbidden in this repo policy")
 
     repo = repo_root_from_here(Path(__file__))
     out = repo / "out" / "CORE_FLAVOR_LOCK"
@@ -43,8 +44,6 @@ def main() -> int:
     enu_path = out / "flavor_enu_core_v0_9.json"
     sum_path = out / "flavor_lock_core_summary_v0_9.md"
 
-    # Fast path (artefact mode): if the deterministic outputs already exist and
-    # match the requested (top,seed,full=False), reuse them.
     def _load(p: Path) -> dict:
         return json.loads(p.read_text(encoding="utf-8"))
 
@@ -52,26 +51,35 @@ def main() -> int:
         try:
             ud0 = _load(ud_path)
             enu0 = _load(enu_path)
-            ok_ud = (ud0.get("version") == "v0.9" and (ud0.get("scan") or {}).get("full") is False
-                     and int((ud0.get("scan") or {}).get("top")) == int(args.top)
-                     and int((ud0.get("scan") or {}).get("seed")) == int(args.seed)
-                     and (ud0.get("scan") or {}).get("tiebreak") == "cost_then_choice_lex_v0_1")
-            ok_enu = (enu0.get("version") == "v0.9" and (enu0.get("scan") or {}).get("full") is False
-                      and int((enu0.get("scan") or {}).get("top")) == int(args.top)
-                      and int((enu0.get("scan") or {}).get("seed")) == int(args.seed)
-                      and (enu0.get("scan") or {}).get("tiebreak") == "cost_then_choice_lex_v0_1")
+            requested_full = bool(args.full)
+
+            ok_ud = (
+                ud0.get("version") == "v0.9"
+                and bool((ud0.get("scan") or {}).get("full")) is requested_full
+                and int((ud0.get("scan") or {}).get("top")) == int(args.top)
+                and int((ud0.get("scan") or {}).get("seed")) == int(args.seed)
+                and (ud0.get("scan") or {}).get("tiebreak") == "cost_then_choice_lex_v0_1"
+            )
+
+            ok_enu = (
+                enu0.get("version") == "v0.9"
+                and bool((enu0.get("scan") or {}).get("full")) is requested_full
+                and int((enu0.get("scan") or {}).get("top")) == int(args.top)
+                and int((enu0.get("scan") or {}).get("seed")) == int(args.seed)
+                and (enu0.get("scan") or {}).get("tiebreak") == "cost_then_choice_lex_v0_1"
+            )
+
             if ok_ud and ok_enu:
                 summary = make_summary(ud0, enu0).replace("out/FLAVOR_LOCK", "out/CORE_FLAVOR_LOCK")
                 write_text(sum_path, summary)
                 print(f"REUSED: {out}")
                 return 0
         except Exception:
-            # fall through to recompute
             pass
 
-    ud = run_ud(full=False, top=args.top, seed=args.seed)
+    ud = run_ud(full=args.full, top=args.top, seed=args.seed)
     enu = run_enu(
-        full=False,
+        full=args.full,
         top=args.top,
         seed=args.seed,
         avoid_d_ratios=(ud["d"]["ratios"]["m1_over_m2"], ud["d"]["ratios"]["m2_over_m3"]),

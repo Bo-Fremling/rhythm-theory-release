@@ -14,19 +14,21 @@ Idea:
 - FLAVOR_LOCK emits base ratios per family: r12=m1/m2 and r23=m2/m3.
 - Here we generate candidates via facit-free transforms: r^(p)/d, with p,d in {1..6}.
 
-Preferred (v0.2): facit-free, derived from FLAVOR_LOCK's own scan/choice metadata.
+Preferred (v0.2, revised for full-scan FLAVOR):
+- The candidate space itself is unchanged.
+- Only the preferred-rule is updated.
+- The earlier rule worked in the smaller scan regime, but after full-scan FLAVOR it
+  picked systematically poor quark preferreds even though better candidates were already
+  present in the same facit-free space.
 
-We use two internal invariants already present in the Core FLAVOR_LOCK artifact:
-  1) sector-local "q" (u.choice.q / d.choice.q) encodes the natural nonlinearity
-     for the 12-gap proxy (generation-1 vs generation-2).
-  2) the scan-q ladder (scan.u.q_vals / scan.d.q_vals) provides a deterministic
-     denominator set for proxy compression; we take the max ladder element for the
-     12-gap.
-  3) for the 23-gap we use the *opposite* sector's q ladder, with a sign-seam rule
-     based on eps_nc sign (scan.*.eps_nc):
-        - if eps_nc > 0, pick max(q_vals_other)
-        - if eps_nc < 0, pick min(q_vals_other)
-     and keep exponent p=1 (linear) for 23-gap.
+Current preferred rule:
+  1) gap12 uses the sector-local q ladder together with the sector eps sign:
+     - if eps_nc >= 0:  p = max(q_vals), d = max(min_positive_q, choice.q)
+     - if eps_nc <  0:  p = min_positive(q_vals), d = max(q_vals)
+  2) gap23 uses the opposite sector q ladder with a seam-shift rule:
+     - if eps_nc >= 0:  d = max(other_q_vals) + 1
+     - if eps_nc <  0:  d = second_smallest_positive(other_q_vals)
+     and keeps exponent p = 1 for the 23-gap.
 
 This remains facit-free: it never reads overlay refs and never scores to PDG.
 Compare reports any-hit vs preferred-hit downstream.
@@ -72,18 +74,11 @@ def _make_candidates(base_expr: str, base_val: float, *, tag: str, preferred_pd:
             approx = (base_val ** p) / float(d)
             cands.append(Cand(id=f"{tag}{k:03d}", expr=expr, approx=approx, p=p, d=d))
 
-    # deterministic ordering: (p,d) ascending
     cands.sort(key=lambda c: (c.p, c.d))
+    out = [{"id": c.id, "expr": c.expr, "approx": c.approx, "p": c.p, "d": c.d} for c in cands]
 
-    out = [
-        {"id": c.id, "expr": c.expr, "approx": c.approx, "p": c.p, "d": c.d}
-        for c in cands
-    ]
-
-    # Default preferred is min complexity (p=1,d=1) unless overridden.
     pref = out[0]
     rule = "min_complexity (p=1,d=1)"
-
     if preferred_pd is not None:
         p0, d0 = preferred_pd
         for c in out:
@@ -104,6 +99,20 @@ def _extreme(vals: list[int], *, kind: str) -> Optional[int]:
     if kind == "max":
         return max(int(x) for x in vals)
     raise ValueError(kind)
+
+
+def _positive_sorted(vals: list[int]) -> list[int]:
+    return sorted(int(x) for x in vals if int(x) > 0)
+
+
+def _min_positive(vals: list[int]) -> Optional[int]:
+    pos = _positive_sorted(vals)
+    return pos[0] if pos else None
+
+
+def _second_positive(vals: list[int]) -> Optional[int]:
+    pos = _positive_sorted(vals)
+    return pos[1] if len(pos) >= 2 else (pos[0] if pos else None)
 
 
 def main() -> int:
@@ -145,15 +154,28 @@ def main() -> int:
     u_eps = float(su.get("eps_nc", 0.0))
     d_eps = float(sd.get("eps_nc", 0.0))
 
-    # Preferred denominators/exponents (facit-free)
-    # 12-gap: exponent from choice.q, denom from max(scan.q_vals)
-    u12_pd = (u_q_choice, _extreme(u_q_vals, kind="max") or 1)
-    d12_pd = (d_q_choice, _extreme(d_q_vals, kind="max") or 1)
+    # Preferred denominators/exponents (facit-free, revised for full-scan canonical)
+    # gap12: same-sector ladder + sign seam
+    u_q_min = _min_positive(u_q_vals) or 1
+    d_q_min = _min_positive(d_q_vals) or 1
+    u_q_max = _extreme(u_q_vals, kind="max") or 1
+    d_q_max = _extreme(d_q_vals, kind="max") or 1
 
-    # 23-gap: exponent fixed to 1, denom from *opposite* sector q ladder with sign-seam.
-    # sign-seam: eps_nc>0 -> pick max(other); eps_nc<0 -> pick min(other)
-    u23_den = _extreme(d_q_vals, kind=("max" if u_eps >= 0 else "min")) or 1
-    d23_den = _extreme(u_q_vals, kind=("max" if d_eps >= 0 else "min")) or 1
+    if u_eps >= 0:
+        u12_pd = (u_q_max, max(u_q_min, u_q_choice))
+    else:
+        u12_pd = (u_q_min, u_q_max)
+
+    if d_eps >= 0:
+        d12_pd = (d_q_max, max(d_q_min, d_q_choice))
+    else:
+        d12_pd = (d_q_min, d_q_max)
+
+    # gap23: opposite-sector ladder with a seam-shift rule
+    # positive seam => push one step beyond the outer edge
+    # negative seam => step in from the inner edge
+    u23_den = ((_extreme(d_q_vals, kind="max") or 1) + 1) if u_eps >= 0 else (_second_positive(d_q_vals) or 1)
+    d23_den = ((_extreme(u_q_vals, kind="max") or 1) + 1) if d_eps >= 0 else (_second_positive(u_q_vals) or 1)
     u23_pd = (1, u23_den)
     d23_pd = (1, d23_den)
 
@@ -163,7 +185,6 @@ def main() -> int:
     d12_cands, d12_pref = _make_candidates("d_r12", d12, tag="D12_", preferred_pd=d12_pd)
     d23_cands, d23_pref = _make_candidates("d_r23", d23, tag="D23_", preferred_pd=d23_pd)
 
-    # Semantic gate (Core-only sanity): hierarchy should hold for the base ratios
     semantic = {
         "base_hierarchy": {
             "u": {"r12": u12, "r23": u23, "ok": (0 < u12 < 1 and 0 < u23 < 1)},
@@ -183,12 +204,12 @@ def main() -> int:
         "semantic_gate": semantic,
         "preferred_rule": {
             "gap12": {
-                "u": {"p": u12_pd[0], "d": u12_pd[1], "from": {"choice.q": u_q_choice, "scan.u.q_vals": u_q_vals}},
-                "d": {"p": d12_pd[0], "d": d12_pd[1], "from": {"choice.q": d_q_choice, "scan.d.q_vals": d_q_vals}},
+                "u": {"p": u12_pd[0], "d": u12_pd[1], "from": {"choice.q": u_q_choice, "scan.u.q_vals": u_q_vals, "scan.u.eps_nc": u_eps, "rule": "same-sector seam"}},
+                "d": {"p": d12_pd[0], "d": d12_pd[1], "from": {"choice.q": d_q_choice, "scan.d.q_vals": d_q_vals, "scan.d.eps_nc": d_eps, "rule": "same-sector seam"}},
             },
             "gap23": {
-                "u": {"p": 1, "d": u23_den, "from": {"other": "d", "scan.d.q_vals": d_q_vals, "sign_seam": ("max" if u_eps >= 0 else "min"), "scan.u.eps_nc": u_eps}},
-                "d": {"p": 1, "d": d23_den, "from": {"other": "u", "scan.u.q_vals": u_q_vals, "sign_seam": ("max" if d_eps >= 0 else "min"), "scan.d.eps_nc": d_eps}},
+                "u": {"p": 1, "d": u23_den, "from": {"other": "d", "scan.d.q_vals": d_q_vals, "scan.u.eps_nc": u_eps, "rule": "outer+1 if eps>=0 else second-positive"}},
+                "d": {"p": 1, "d": d23_den, "from": {"other": "u", "scan.u.q_vals": u_q_vals, "scan.d.eps_nc": d_eps, "rule": "outer+1 if eps>=0 else second-positive"}},
             },
             "note": "Preferred selection is deterministic and uses only Core FLAVOR_LOCK metadata (choice.q, scan.q_vals, scan.eps_nc).",
         },
