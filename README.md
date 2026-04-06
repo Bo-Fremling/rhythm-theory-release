@@ -22,14 +22,31 @@ The release is set up to be reviewable without authority:
 
 ## Quick start
 
-From the **Release root** (the directory that contains `00_TOP/`):
+Run from the **Release root** (the directory that contains `00_TOP/`).
 
-### Ubuntu / Linux
+Install dependencies:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+```
+
+Run verification:
+
+### Windows
+
+```bash
+python verify_all.py
+```
+
+### Linux / Ubuntu / WSL
+
+```bash
+python3 verify_all.py
+```
+
+Alternative on Linux / WSL:
+
+```bash
 bash verify_all.sh
 ```
 
@@ -38,23 +55,6 @@ Expected final line:
 ```text
 ALL_VERIFY: PASS
 ```
-
-### Windows 11
-
-**Recommended:** use **WSL (Ubuntu)** and run the same commands as above.
-
-If you prefer a native Windows shell, install Python 3 and the packages from `requirements.txt` first, then read:
-- `INSTALL.md`
-- `verify_all.ps1`
-
-## Important note about Windows
-
-The current top-level verification entrypoints are **bash wrappers**:
-- `verify_all.sh`
-- `verify_core.sh`
-- `verify_compare.sh`
-
-That means Linux/WSL is the cleanest path today.
 
 ## What to read after running
 
