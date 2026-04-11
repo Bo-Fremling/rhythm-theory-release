@@ -23,16 +23,17 @@ OUT_DIR = REPO_ROOT / "out" / "FLAVOR_LOCK"
 VERIFY_JSON = OUT_DIR / "flavor_lock_verify_v0_1.json"
 
 PREFERRED_KEYS_CKM = [
-    "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis_ckm13_sextet_holoC30_CPBEST",
-    "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis_ckm13_sextet_holoC30_GRIDBEST",
+    # Follow the file header policy: v0.24 first, then v0.19/v0.18, then seam-only.
+    "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis_ckm13_rho2_phiB",
     "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis_ckm13_sextet_phiB_CANON_ROWPHASE",
     "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis_ckm13_sextet_phiB",
-    "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis_ckm13_rho2_phiB",
     "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis",
     "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23",
     "rt_construct_monodromy_1260_postR12_seam_from_phase_rule_down_oriented",
     "rt_construct_misalignment",
-
+    # Diagnostic freeze candidates kept as fallback only, not canonical selectors.
+    "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis_ckm13_sextet_holoC30_CPBEST",
+    "rt_construct_monodromy_1260_postR12_seam_down_oriented_pp23_uubasis_ckm13_sextet_holoC30_GRIDBEST",
 ]
 
 PREFERRED_KEYS_PMNS = [
