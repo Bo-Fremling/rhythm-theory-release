@@ -1,6 +1,6 @@
 # RT Addendum — PP/RP executable geometry and the alpha route
 
-> **TL;DR**  
+>  ## Quick summary
 > This addendum shows how Rhythm Theory (RT) reads the alpha route as a nested **PP → RP closure/readout geometry**.  
 > **π** measures continuous circular closure.  
 > **α<sub>RT</sub>** is treated here as a dimensionless constant of gated, discrete closure/readout.
@@ -128,7 +128,7 @@ The viewers are included to show how the same numbers appear as a connected PP/R
 local cell → C30 closure → 210 beat cell → 1260 full closure
 ```
 
-Recommended placement in this release root:
+Placement in this release root:
 
 ```text
 DISCRETE_ALPHA_NOTE.md
@@ -344,7 +344,7 @@ The point is not that these numbers are merely present. The point is that they o
 
 ---
 
-## 7. Alpha as “like pi, but different”
+## 7. Alpha “like pi, but different”
 
 `π` is a dimensionless constant of continuous circular geometry.
 
