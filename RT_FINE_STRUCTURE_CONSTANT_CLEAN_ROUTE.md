@@ -6,6 +6,20 @@ scope: "One explicit route (k=3, Family H) inside EM_LOCK candidate space"
 ---
 
 # RT EM Party Trick — a unit-clean route to the fine-structure constant
+> **Geometry note for reviewers**
+>
+> The alpha expression is not intended as a standalone number fit.
+> The intended route is:
+>
+> `PP/RP spiral geometry → closure hierarchy → EM candidate route → alpha`
+>
+> See:
+>
+> `RT_ADDENDUM_PP_RP_ALPHA_GEOMETRY_v1.md`
+>
+> for the executable geometry bridge.
+>
+> This addendum is explanatory, not a new `verify_all.sh` lock. It is included to make the underlying spiral/closure geometry visible before judging the alpha route as constrained or post hoc.
 
 ## What I am showing (up front)
 
