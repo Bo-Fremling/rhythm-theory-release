@@ -3,6 +3,20 @@
 ## Purpose
 
 This note isolates a small discrete construction that produces a dimensionless quantity numerically close to the fine-structure constant.
+> **Geometry note for reviewers**
+>
+> The alpha expression is not intended as a standalone number fit.
+> The intended route is:
+>
+> `PP/RP spiral geometry → closure hierarchy → EM candidate route → alpha`
+>
+> See:
+>
+> `RT_ADDENDUM_PP_RP_ALPHA_GEOMETRY_v1.md`
+>
+> for the executable geometry bridge.
+>
+> This addendum is explanatory, not a new `verify_all.sh` lock. It is included to make the underlying spiral/closure geometry visible before judging the alpha route as constrained or post hoc.
 
 The review task is narrow: is the construction genuinely constrained, or is it only a compact post hoc fit?
 
