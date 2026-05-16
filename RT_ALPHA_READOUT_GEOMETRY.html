@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RT Spiral — 2D + 3D</title>
+<style>
+*{box-sizing:border-box}
+body{background:#181818;color:#ccc;font-family:sans-serif;margin:0;padding:1rem}
+h1{font-size:13px;font-weight:500;color:#888;text-align:center;margin:0 0 .75rem;letter-spacing:.03em}
+.views{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.vbox{display:flex;flex-direction:column;align-items:center;gap:5px}
+.vl{font-size:11px;color:#666}
+canvas{border-radius:5px;display:block;width:500px;height:500px;max-width:calc(100vw - 2rem)}
+#cv3{cursor:grab}#cv3:active{cursor:grabbing}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:.6rem;align-items:center}
+button{background:transparent;border:.5px solid #555;color:#ccc;padding:5px 12px;border-radius:5px;font-size:12px;cursor:pointer;white-space:nowrap}
+button:hover{background:rgba(255,255,255,.07)}
+button.on{border-color:#7F77DD;color:#9990e8}
+input[type=range]{width:110px;accent-color:#7F77DD;cursor:pointer}
+.lbl{font-size:12px;color:#777;white-space:nowrap}
+#st{font-size:12px;color:#666;text-align:center;min-height:1.6em;margin-top:4px;line-height:1.6}
+.leg{display:flex;gap:11px;font-size:11px;color:#666;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.li{display:flex;align-items:center;gap:4px}
+.lb{display:inline-block;width:11px;height:2px;border-radius:1px}
+.lc{display:inline-block;width:8px;height:8px;border-radius:50%}
+.note{max-width:680px;margin:.8rem auto 0;font-size:11px;color:#555;line-height:1.75;border-top:.5px solid #2a2a2a;padding-top:.65rem}
+.note b{color:#777}
+</style>
+</head>
+<body>
+<h1>RT Closure Geometry</h1>
+
+<div class="views">
+  <div class="vbox">
+    <div class="vl">Closure map · xy projection</div>
+    <canvas id="cv2"></canvas>
+  </div>
+  <div class="vbox">
+    <div class="vl">3D spiral · correct radius structure · drag to rotate</div>
+    <canvas id="cv3"></canvas>
+  </div>
+</div>
+
+<div class="row">
+  <button id="bBeat" class="on" onclick="setClosure(210)">Beat 210</button>
+  <button id="bFull" onclick="setClosure(1260)">Full 1260</button>
+  <button id="bPlay" onclick="togglePlay()">▶ Play</button>
+  <button onclick="stepN(7)">+7 (seam)</button>
+  <button onclick="stepN(1)">+1</button>
+  <button onclick="resetAnim()">↺</button>
+  <button onclick="resetView()">View ↺</button>
+</div>
+
+<div class="row">
+  <span class="lbl">Speed:</span>
+  <input type="range" id="spd" min="1" max="10" value="4"
+         oninput="document.getElementById('spdv').textContent=this.value">
+  <span id="spdv" class="lbl">4</span>
+  <span style="width:12px"></span>
+  <label class="lbl"><input type="checkbox" id="cGrid" checked onchange="redrawAll()"> C30 grid</label>
+  <label class="lbl"><input type="checkbox" id="cSeam" checked onchange="redrawAll()"> Seams</label>
+  <label class="lbl"><input type="checkbox" id="c21"   checked onchange="redrawAll()"> 21-window</label>
+  <label class="lbl"><input type="checkbox" id="cSpiral" checked onchange="redrawAll()"> Spiral</label>
+  <label class="lbl"><input type="checkbox" id="cB"    checked onchange="redrawAll()"> B-strand</label>
+  <label class="lbl"><input type="checkbox" id="cP"    checked onchange="redrawAll()"> tp-p ref</label>
+  <label class="lbl"><input type="checkbox" id="cDeca"        onchange="redrawAll()"> ρ=10 decagon</label>
+</div>
+
+<div id="st"></div>
+
+<div class="leg">
+  <span class="li"><span class="lb" style="background:#4A9ECC"></span>tp-e A</span>
+  <span class="li"><span class="lb" style="background:#6BAED6;opacity:.5"></span>tp-e B</span>
+  <span class="li"><span class="lb" style="background:#8C564B"></span>tp-p A</span>
+  <span class="li"><span class="lb" style="background:#1D9E75"></span>Z₃ sec 0</span>
+  <span class="li"><span class="lb" style="background:#7F77DD"></span>Z₃ sec 1</span>
+  <span class="li"><span class="lb" style="background:#D85A30"></span>Z₃ sec 2</span>
+  <span class="li"><span class="lc" style="background:#EFC94C"></span>Seam (mod 7)</span>
+  <span class="li"><span class="lc" style="background:#5DD8D8"></span>21-window boundary (mod 21)</span>
+  <span class="li"><span class="lc" style="background:#E86ACA;opacity:.7"></span>20/21 arming window</span>
+  <span class="li"><span class="lb" style="background:#FF9EFF"></span>{10/3} star &nbsp;·&nbsp; <span class="lb" style="background:rgba(255,255,255,0.30)"></span>decagon</span>
+</div>
+
+<div class="note">
+  <b>21-window and 20/21:</b>
+  Each beat cell (210) contains ρ=10 windows of 21 steps each. Within every 21-window one step is
+  excluded (the boundary seam, cyan) → 20 active positions. Active duty = 20/21.
+  The 3 gold seams per 21-window (n mod 7) are the internal 7-cell structure;
+  cyan marks the window boundary specifically.
+  The current arming window (pink arc in 2D) is the 21-window containing <em>n</em>.<br>
+  <b>5-structure:</b> 5×42=210; boundaries at n mod 42=0 shown as faint rings in 3D.<br>
+  <b>6 beat cells:</b> visible in full-closure mode as rings at n mod 210=0.<br>
+  <b>Radius structure:</b> tp-e R=1.0, ae=R/20=0.05 (micro-amplitude = 1/active duty count 20).
+  tp-p: Rp=3R/5=0.60 (Z₃=3, 5=210/42). ρ=10=210/21. M_micro=30=K (locked to C30 grid).
+  A/B diametrically opposite: φ_B=φ_A+π. Structure is epicyclic, not a simple helix.
+</div>
+
+<script>
+"use strict";
+
+// ─── HI-DPI SETUP ────────────────────────────────────────────────────────────
+const DPR=window.devicePixelRatio||1, CS=500, C2=CS/2;
+function initCanvas(id){
+  const cv=document.getElementById(id);
+  cv.width=Math.round(CS*DPR); cv.height=Math.round(CS*DPR);
+  const ctx=cv.getContext('2d'); ctx.scale(DPR,DPR); return {cv,ctx};
+}
+const {cv:cv2,ctx:g2}=initCanvas('cv2');
+const {cv:cv3,ctx:g3}=initCanvas('cv3');
+
+// ─── LEDGER CONSTANTS ────────────────────────────────────────────────────────
+const Re=1.0,ae=0.05, Rp=0.60,ap=0.03, MM=30,RHO=10;
+const ZH=3.1*2*(Re+ae);    // total visual z extent ≈ 6.51
+
+const C3       =['#1D9E75','#7F77DD','#D85A30'];
+const SEAM_COL ='#EFC94C';   // 7-cell seams
+const W21_COL  ='#5DD8D8';   // 21-window boundaries
+const ARM_COL  ='rgba(232,106,202,0.22)'; // arming window tint
+
+// ─── SHARED STATE ────────────────────────────────────────────────────────────
+let N=210, nS=210, playing=false, tid=null;
+let rX=0.42, rY=0.52, drag=false, lx=0, ly=0;
+let G={N:-1};
+
+function redrawAll(){draw2();draw3();}
+function getDelay(){const s=parseInt(document.getElementById('spd').value); return Math.max(5,Math.round(290/Math.pow(s,1.6)));}
+
+// ─── DECAGON (ρ=10 symmetry) ─────────────────────────────────────────────────
+// Star {10/3} traversal: 1→4→7→10→3→6→9→2→5→8
+// Removing backward jumps (10→3, 9→2, 8→1) leaves 3 independent forward chains:
+//   Chain A: [1, 4, 7, 10]   — magenta
+//   Chain B: [3, 6, 9]       — orange
+//   Chain C: [2, 5, 8]       — light blue
+// Each chain: 36° step between consecutive points (36° = 360°/ρ).
+// For N=1260: pattern repeats once per beat cell (6 times).
+
+const CHAINS     = [[1,4,7,10],[3,6,9],[2,5,8]];
+// ─── DECAGON / 3-CHAIN (ρ=10 symmetry) ──────────────────────────────────────
+// Total cyan points C = N/21.  N=210 → C=10,  N=1260 → C=60.
+// 3 chains with step 3:
+//   Chain 1 (magenta):  k = 1, 4, 7, 10, ...   (C/3 + 1 points)
+//   Chain 2 (blue):     k = 2, 5, 8, 11, ...
+//   Chain 3 (orange):   k = 3, 6, 9, 12, ...
+// All chains are strictly forward (k always increases) → no backward jumps.
+// Each consecutive pair is 36° apart angularly (3×21×12° = 756° ≡ 36° mod 360°).
+
+const CHAIN_COLS = ['#FF9EFF','#88DDFF','#FFCC77'];
+
+function chainSeqs(C){
+  return [1,2,3].map(start=>{
+    const s=[];
+    for(let k=start;k<=C;k+=3) s.push(k);
+    return s;
+  });
+}
+
+function drawDecagon(){
+  if(!document.getElementById('cDeca').checked) return;
+  const C=N/21;
+  if(C!==Math.floor(C)) return;
+
+  // Build available 2D positions (up to nS)
+  const pts={};
+  for(let k=1;k<=C;k++){ const n=k*21; if(n<=nS) pts[k]=xy2(n); }
+
+  chainSeqs(C).forEach((seq,ci)=>{
+    const avail=seq.filter(k=>pts[k]);
+    if(avail.length<2) return;
+    g2.save();
+    g2.strokeStyle=CHAIN_COLS[ci]; g2.lineWidth=1.5; g2.globalAlpha=0.75;
+    g2.setLineDash([]);
+    g2.beginPath();
+    g2.moveTo(pts[avail[0]][0],pts[avail[0]][1]);
+    for(let i=1;i<avail.length;i++) g2.lineTo(pts[avail[i]][0],pts[avail[i]][1]);
+    g2.stroke(); g2.globalAlpha=1; g2.restore();
+  });
+
+  if(nS>=210){
+    g2.save();
+    g2.fillStyle='rgba(255,200,255,0.50)'; g2.font='11px sans-serif'; g2.textAlign='center';
+    g2.fillText('ρ=10 · 36° · 3 chains', C2, C2+Rmax2+16);
+    g2.restore();
+  }
+}
+
+function drawChains3(){
+  if(!document.getElementById('cDeca').checked) return;
+  const C=N/21;
+  if(C!==Math.floor(C)) return;
+
+  // Build available 3D positions (up to nS)
+  const pts={};
+  for(let k=1;k<=C;k++){
+    const n=k*21;
+    if(n<=nS){
+      const idx=Math.round((n/N)*(G.es-1));
+      pts[k]=[G.ea[idx*3],G.ea[idx*3+1],G.ea[idx*3+2]];
+    }
+  }
+
+  chainSeqs(C).forEach((seq,ci)=>{
+    const avail=seq.filter(k=>pts[k]);
+    if(avail.length<2) return;
+    g3.save();
+    g3.strokeStyle=CHAIN_COLS[ci]; g3.lineWidth=1.6; g3.globalAlpha=0.82;
+    g3.setLineDash([]);
+    g3.beginPath();
+    const[px0,py0]=pr(pts[avail[0]][0],pts[avail[0]][1],pts[avail[0]][2]);
+    g3.moveTo(px0,py0);
+    for(let i=1;i<avail.length;i++){
+      const p=pts[avail[i]];
+      const[px,py]=pr(p[0],p[1],p[2]);
+      g3.lineTo(px,py);
+    }
+    g3.stroke(); g3.globalAlpha=1; g3.restore();
+  });
+}
+
+function drawDecagon(){
+  if(!document.getElementById('cDeca').checked) return;
+  const C=N/21;
+  if(C!==Math.floor(C)) return;
+
+  const pts={};
+  for(let k=1;k<=C;k++){ const n=k*21; if(n<=nS) pts[k]=xy2(n); }
+
+  chainSeqs(C).forEach((seq,ci)=>{
+    const avail=seq.filter(k=>pts[k]);
+    if(avail.length<2) return;
+    g2.save();
+    g2.strokeStyle=CHAIN_COLS[ci]; g2.lineWidth=1.5; g2.globalAlpha=0.75;
+    g2.setLineDash([]);
+    g2.beginPath();
+    g2.moveTo(pts[avail[0]][0],pts[avail[0]][1]);
+    for(let i=1;i<avail.length;i++) g2.lineTo(pts[avail[i]][0],pts[avail[i]][1]);
+    g2.stroke(); g2.globalAlpha=1; g2.restore();
+  });
+
+  if(nS>=210){
+    g2.save();
+    g2.fillStyle='rgba(255,200,255,0.50)'; g2.font='11px sans-serif'; g2.textAlign='center';
+    g2.fillText('ρ=10 · 36° · 3 chains', C2, C2+Rmax2+16);
+    g2.restore();
+  }
+}
+
+
+const Rmax2=Math.round(CS*.425), Rmin2=18;
+const ang2=n=>n*2*Math.PI/30;
+// Linear from Rmin2 to Rmax2 over N steps — equal radial spacing, starts off-centre.
+const rad2=n=>Rmin2+(Rmax2-Rmin2)*(n/N);
+const sec2=n=>Math.floor((n%30)/10);
+const xy2=n=>{const a=ang2(n),r=rad2(n); return[C2+r*Math.cos(a),C2+r*Math.sin(a)];};
+
+function draw2(){
+  g2.clearRect(0,0,CS,CS);
+
+  // C30 grid
+  if(document.getElementById('cGrid').checked){
+    g2.save();
+    for(let i=0;i<30;i++){
+      const a=i*2*Math.PI/30,z3=i%10===0;
+      g2.beginPath(); g2.moveTo(C2,C2);
+      g2.lineTo(C2+Rmax2*Math.cos(a),C2+Rmax2*Math.sin(a));
+      g2.strokeStyle=z3?'rgba(200,200,200,.28)':'rgba(200,200,200,.08)';
+      g2.lineWidth=z3?.8:.5;
+      if(z3)g2.setLineDash([4,3]);else g2.setLineDash([]);
+      g2.stroke();
+    }
+    g2.setLineDash([]); g2.restore();
+  }
+
+  const showSeam=document.getElementById('cSeam').checked;
+  const show21=document.getElementById('c21').checked;
+  const showSpiral=document.getElementById('cSpiral').checked;
+
+  // Pass 0: arming window tint for current 21-window
+  if(show21&&nS>0){
+    const winStart=Math.floor(nS/21)*21;
+    const winEnd=Math.min(winStart+21,N);
+    if(winStart<nS){
+      g2.save(); g2.strokeStyle='rgba(232,106,202,0.55)'; g2.lineWidth=4.5; g2.globalAlpha=1; g2.lineCap='round';
+      g2.beginPath();
+      const[sx,sy]=xy2(winStart); g2.moveTo(sx,sy);
+      for(let n=winStart+1;n<=Math.min(nS,winEnd);n++){
+        const[px,py]=xy2(n); g2.lineTo(px,py);
+      }
+      g2.stroke(); g2.restore();
+    }
+  }
+
+  // Pass 1: sector lines (skip seams)
+  if(showSpiral){
+    g2.save();
+    for(let n=1;n<=nS;n++){
+      if(n%7===0)continue;
+      const[x1,y1]=xy2(n-1),[x2,y2]=xy2(n);
+      g2.beginPath(); g2.moveTo(x1,y1); g2.lineTo(x2,y2);
+      g2.strokeStyle=C3[sec2(n)]; g2.lineWidth=1.5; g2.globalAlpha=.80;
+      g2.setLineDash([]); g2.stroke(); g2.globalAlpha=1;
+    }
+    g2.restore();
+  }
+
+  // Pass 2: 7-cell seams (gold)
+  if(showSeam&&showSpiral){
+    g2.save();
+    for(let n=7;n<=nS;n+=7){
+      const[x1,y1]=xy2(n-1),[x2,y2]=xy2(n);
+      g2.beginPath(); g2.moveTo(x1,y1); g2.lineTo(x2,y2);
+      g2.strokeStyle=SEAM_COL; g2.lineWidth=2.2; g2.globalAlpha=.80;
+      g2.setLineDash([]); g2.stroke(); g2.globalAlpha=1;
+    }
+    g2.restore();
+  }
+
+  // Pass 3: 21-window boundaries (cyan, on top, with halo ring)
+  if(show21){
+    g2.save();
+    for(let n=21;n<=nS;n+=21){
+      const[px,py]=xy2(n);
+      g2.beginPath(); g2.arc(px,py,5,0,2*Math.PI);
+      g2.fillStyle=W21_COL; g2.globalAlpha=.90; g2.fill(); g2.globalAlpha=1;
+      g2.beginPath(); g2.arc(px,py,8,0,2*Math.PI);
+      g2.strokeStyle=W21_COL; g2.lineWidth=.8; g2.globalAlpha=.35; g2.stroke(); g2.globalAlpha=1;
+    }
+    g2.restore();
+  }
+
+  // Pass 4: decagon / {10/3} star
+  drawDecagon();
+
+  // Current position dot
+  if(nS>0){
+    const[px,py]=xy2(nS);
+    g2.beginPath(); g2.arc(px,py,4,0,2*Math.PI);
+    g2.fillStyle=C3[sec2(nS)]; g2.fill();
+  }
+  g2.beginPath(); g2.arc(C2,C2,2.5,0,2*Math.PI);
+  g2.fillStyle='rgba(200,200,200,.30)'; g2.fill();
+}
+
+// ─── 3D EPICYCLIC GEOMETRY ───────────────────────────────────────────────────
+// Exact formula from rotor_pair_closure() in the Python source.
+function mkSpiral(nsamp,R,a,M,mt,str){
+  const P=new Float32Array(nsamp*3);
+  for(let i=0;i<nsamp;i++){
+    const t=i/(nsamp-1);
+    const phiA=mt*2*Math.PI*t;
+    const phi=str==='A'?phiA:phiA+Math.PI;
+    const th=M*phi;
+    const cr=Math.cos(phi),sr=Math.sin(phi),ct=-Math.sin(phi);
+    P[i*3  ]=R*cr+a*(Math.cos(th)*cr+Math.sin(th)*ct);
+    P[i*3+1]=R*sr+a*(Math.cos(th)*sr-Math.sin(th)*cr);
+    P[i*3+2]=(t-.5)*ZH;
+  }
+  return P;
+}
+
+function mkMarkers3(ea,nsamp,n_total,step){
+  const pts=[];
+  for(let n=step;n<=n_total;n+=step){
+    const idx=Math.round((n/n_total)*(nsamp-1));
+    pts.push([ea[idx*3],ea[idx*3+1],ea[idx*3+2],n]);
+  }
+  return pts;
+}
+
+function buildG(n){
+  if(G.N===n)return;
+  const em=n/30,pm=RHO*em;
+  const es=Math.min(Math.max(4000,n*15),50000);
+  const ps=Math.min(Math.max(8000,n*50),60000);
+  G.ea  =mkSpiral(es,Re,ae,MM,em,'A');
+  G.eb  =mkSpiral(es,Re,ae,MM,em,'B');
+  G.pa  =mkSpiral(ps,Rp,ap,MM,pm,'A');
+  G.pb  =mkSpiral(ps,Rp,ap,MM,pm,'B');
+  G.m7  =mkMarkers3(G.ea,es,n,7);
+  G.m21 =mkMarkers3(G.ea,es,n,21);
+  G.m42 =mkMarkers3(G.ea,es,n,42);
+  G.m210=n===1260?mkMarkers3(G.ea,es,n,210):[];
+  G.es=es; G.N=n;
+}
+
+// ─── 3D ORTHOGRAPHIC PROJECTION ──────────────────────────────────────────────
+const PS=Math.round(CS/10.5);
+
+function pr(x,y,z){
+  const cY=Math.cos(rY),sY=Math.sin(rY);
+  const x1=x*cY+z*sY,z1=-x*sY+z*cY;
+  const cX=Math.cos(rX),sX=Math.sin(rX);
+  return[C2+x1*PS, C2-(y*cX-z1*sX)*PS];
+}
+
+function polyline3(pts,col,al,lw,frac){
+  const n=Math.max(2,Math.floor(frac*pts.length/3));
+  g3.save(); g3.strokeStyle=col; g3.lineWidth=lw; g3.globalAlpha=al;
+  g3.beginPath();
+  const[px0,py0]=pr(pts[0],pts[1],pts[2]); g3.moveTo(px0,py0);
+  for(let i=1;i<n;i++){const[px,py]=pr(pts[i*3],pts[i*3+1],pts[i*3+2]);g3.lineTo(px,py);}
+  g3.stroke(); g3.restore();
+}
+
+function markers3(markers,frac,col,r,al,ring=false){
+  const n=Math.floor(frac*markers.length);
+  g3.save(); g3.fillStyle=col; g3.strokeStyle=col; g3.globalAlpha=al;
+  for(let i=0;i<n;i++){
+    const[px,py]=pr(markers[i][0],markers[i][1],markers[i][2]);
+    g3.beginPath(); g3.arc(px,py,r,0,2*Math.PI); g3.fill();
+    if(ring){g3.beginPath();g3.arc(px,py,r+2.5,0,2*Math.PI);g3.lineWidth=.7;g3.globalAlpha=al*.4;g3.stroke();g3.globalAlpha=al;}
+  }
+  g3.restore();
+}
+
+function zRing3(z,r,col,al,lw){
+  const seg=72;
+  g3.save(); g3.strokeStyle=col; g3.lineWidth=lw; g3.globalAlpha=al;
+  g3.beginPath();
+  for(let i=0;i<=seg;i++){
+    const a=i*2*Math.PI/seg;
+    const[px,py]=pr(r*Math.cos(a),r*Math.sin(a),z);
+    if(i===0)g3.moveTo(px,py);else g3.lineTo(px,py);
+  }
+  g3.stroke(); g3.restore();
+}
+
+function axis3(){
+  g3.save(); g3.strokeStyle='rgba(180,180,180,.14)'; g3.lineWidth=.6; g3.setLineDash([5,4]);
+  const[x0,y0]=pr(0,0,-ZH/2),[x1,y1]=pr(0,0,ZH/2);
+  g3.beginPath();g3.moveTo(x0,y0);g3.lineTo(x1,y1);
+  g3.stroke();g3.setLineDash([]);g3.restore();
+}
+
+function draw3(){
+  g3.clearRect(0,0,CS,CS);
+  buildG(N);
+  const frac=nS/N;
+  const r=Re+ae+.08;
+  const show21=document.getElementById('c21').checked;
+  const showSeam=document.getElementById('cSeam').checked;
+
+  axis3();
+  zRing3(-ZH/2,r,'rgba(200,200,200,.5)',.20,.6);
+  zRing3( ZH/2,r,'rgba(200,200,200,.5)',.20,.6);
+
+  // 6-slot guide in PP plane
+  g3.save(); g3.strokeStyle='rgba(200,200,200,.10)'; g3.lineWidth=.5;
+  for(let i=0;i<6;i++){
+    const a=i*Math.PI/3;
+    const[x0,y0]=pr(0,0,-ZH/2);
+    const[x1,y1]=pr((Re+ae+.04)*Math.cos(a),(Re+ae+.04)*Math.sin(a),-ZH/2);
+    g3.beginPath();g3.moveTo(x0,y0);g3.lineTo(x1,y1);g3.stroke();
+  }
+  g3.restore();
+
+  // 5-structure: 42-group rings (subtle)
+  if(show21){
+    for(const m of G.m42){
+      if(m[3]/N>frac)break;
+      zRing3(m[2],Re+ae+.03,'rgba(200,180,100,.5)',.14,.5);
+    }
+  }
+
+  // Beat-cell rings in full-closure mode
+  if(N===1260){
+    for(const m of G.m210){
+      if(m[3]/N>frac)break;
+      zRing3(m[2],r+.04,'rgba(180,180,255,.6)',.30,.8);
+    }
+  }
+
+  // 21-window boundary rings
+  if(show21){
+    for(const m of G.m21){
+      if(m[3]/N>frac)break;
+      zRing3(m[2],Re+ae+.06,W21_COL,.18,.5);
+    }
+  }
+
+  // Spiral lines
+  if(document.getElementById('cP').checked){
+    polyline3(G.pb,'#C49C94',.28,.8,frac);
+    polyline3(G.pa,'#8C564B',.60,1.1,frac);
+  }
+  if(document.getElementById('cB').checked)
+    polyline3(G.eb,'#6BAED6',.45,1.3,frac);
+  polyline3(G.ea,'#4A9ECC',.90,2.0,frac);
+
+  // Seam dots (gold) on ea
+  if(showSeam) markers3(G.m7,  frac,SEAM_COL,2.2,.80);
+
+  // 21-window boundaries (cyan, on top of gold, with halo)
+  if(show21)   markers3(G.m21, frac,W21_COL, 3.2,.88,true);
+
+  // ρ=10 chains in 3D
+  drawChains3();
+
+  // Labels
+  g3.fillStyle='rgba(150,150,150,.45)'; g3.font='11px sans-serif'; g3.textAlign='center';
+  const[lx0,ly0]=pr(0,r+.18,-ZH/2); g3.fillText('PP',lx0,ly0+3);
+  const[lx1,ly1]=pr(0,r+.18, ZH/2); g3.fillText('RP',lx1,ly1-4);
+
+  g3.fillStyle='rgba(125,125,125,.40)'; g3.font='11px sans-serif'; g3.textAlign='left';
+  g3.fillText('Re=1.0  ae=Re/20',10,18);
+  g3.fillText('Rp=3Re/5  ρ=10',  10,32);
+  g3.fillText(`M=K=30   N=${N}`,  10,46);
+}
+
+// ─── MOUSE / TOUCH ───────────────────────────────────────────────────────────
+function onDS(cx,cy){drag=true;lx=cx;ly=cy;}
+function onDM(cx,cy){if(!drag)return;rY+=(cx-lx)*.009;rX-=(cy-ly)*.009;rX=Math.max(-1.5,Math.min(1.5,rX));lx=cx;ly=cy;draw3();}
+cv3.addEventListener('mousedown', e=>onDS(e.clientX,e.clientY));
+cv3.addEventListener('mousemove', e=>onDM(e.clientX,e.clientY));
+cv3.addEventListener('mouseup',   ()=>drag=false);
+cv3.addEventListener('mouseleave',()=>drag=false);
+cv3.addEventListener('touchstart',e=>{const t=e.touches[0];onDS(t.clientX,t.clientY);},{passive:true});
+cv3.addEventListener('touchmove', e=>{e.preventDefault();const t=e.touches[0];onDM(t.clientX,t.clientY);},{passive:false});
+cv3.addEventListener('touchend',  ()=>drag=false);
+
+// ─── STATUS ──────────────────────────────────────────────────────────────────
+function upd(){
+  const el=document.getElementById('st');
+  if(nS===0){el.textContent='n=0';return;}
+  const win21=Math.floor(nS/21)+1;
+  const pos21=nS%21;
+  const cell7=Math.floor(nS/7), pos7=nS%7;
+  const turn=(nS/30).toFixed(2);
+
+  if(nS===N&&N===210){
+    el.innerHTML='<b style="color:#bbb">Beat closure ↩</b> — 7 turns · 10×21-windows · 30 seams · 2100 tp-p turns'; return;
+  }
+  if(nS===N&&N===1260){
+    el.innerHTML='<b style="color:#bbb">Full closure ↩</b> — 42 turns=6×7 · 60×21-windows · 180 seams · 12600 tp-p turns'; return;
+  }
+
+  const w21str = pos21===0
+    ? `<span style="color:${W21_COL}">⊕ 21-window boundary</span>`
+    : `21-win ${win21} · pos ${pos21}/21 · active ${Math.min(pos21,20)}/20`;
+
+  el.innerHTML=`n=${nS} · turns ${turn} · 7-cell ${cell7}[${pos7}] &nbsp;|&nbsp; ${w21str}`;
+}
+
+// ─── ANIMATION ───────────────────────────────────────────────────────────────
+function tick(){
+  if(!playing)return;
+  nS=Math.min(nS+1,N);
+  draw2();draw3();upd();
+  if(nS>=N){playing=false;document.getElementById('bPlay').textContent='↺ Replay';return;}
+  tid=setTimeout(tick,getDelay());
+}
+function togglePlay(){
+  const b=document.getElementById('bPlay');
+  if(nS>=N){nS=0;draw2();draw3();}
+  playing=!playing;
+  if(playing){b.textContent='⏸ Pause';tick();}
+  else{b.textContent='▶ Continue';clearTimeout(tid);}
+}
+function stepN(k){
+  playing=false;clearTimeout(tid);
+  document.getElementById('bPlay').textContent='▶ Continue';
+  nS=Math.min(nS+k,N);draw2();draw3();upd();
+}
+function resetAnim(){
+  playing=false;clearTimeout(tid);nS=0;
+  document.getElementById('bPlay').textContent='▶ Play';
+  draw2();draw3();upd();
+}
+function setClosure(n){
+  playing=false;clearTimeout(tid);N=n;nS=n;G.N=-1;
+  document.getElementById('bBeat').classList.toggle('on',n===210);
+  document.getElementById('bFull').classList.toggle('on',n===1260);
+  document.getElementById('bPlay').textContent='▶ Play';
+  draw2();draw3();upd();
+}
+function resetView(){rX=.42;rY=.52;draw3();}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+draw2();draw3();upd();
+</script>
+</body>
+</html>
