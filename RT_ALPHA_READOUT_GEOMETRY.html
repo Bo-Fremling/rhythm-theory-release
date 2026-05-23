@@ -66,6 +66,8 @@ input[type=range]{width:110px;accent-color:#7F77DD;cursor:pointer}
   <label class="lbl"><input type="checkbox" id="cB"    checked onchange="redrawAll()"> B-strand</label>
   <label class="lbl"><input type="checkbox" id="cP"    checked onchange="redrawAll()"> tp-p ref</label>
   <label class="lbl"><input type="checkbox" id="cDeca"        onchange="redrawAll()"> ρ=10 decagon</label>
+  <label class="lbl"><input type="checkbox" id="cCarrier3" onchange="redrawAll()"> 3-arm carrier</label>
+  <label class="lbl"><input type="checkbox" id="cBeatLemma" checked onchange="redrawAll()"> Carrier–beat lemma</label>
 </div>
 
 <div id="st"></div>
@@ -81,6 +83,9 @@ input[type=range]{width:110px;accent-color:#7F77DD;cursor:pointer}
   <span class="li"><span class="lc" style="background:#5DD8D8"></span>21-window boundary (mod 21)</span>
   <span class="li"><span class="lc" style="background:#E86ACA;opacity:.7"></span>20/21 arming window</span>
   <span class="li"><span class="lb" style="background:#FF9EFF"></span>{10/3} star &nbsp;·&nbsp; <span class="lb" style="background:rgba(255,255,255,0.30)"></span>decagon</span>
+  <span class="li"><span class="lb" style="background:rgba(255,255,255,0.70)"></span>3-arm carrier centres</span>
+  <span class="li"><span class="lc" style="background:#42E08A"></span>Carrier A: 0,420,840</span>
+  <span class="li"><span class="lc" style="background:#FF5AB3"></span>Carrier B: 210,630,1050</span>
 </div>
 
 <div class="note">
@@ -91,7 +96,7 @@ input[type=range]{width:110px;accent-color:#7F77DD;cursor:pointer}
   cyan marks the window boundary specifically.
   The current arming window (pink arc in 2D) is the 21-window containing <em>n</em>.<br>
   <b>5-structure:</b> 5×42=210; boundaries at n mod 42=0 shown as faint rings in 3D.<br>
-  <b>6 beat cells:</b> visible in full-closure mode as rings at n mod 210=0.<br>
+  <b>6 beat cells:</b> visible in full-closure mode as rings at n mod 210=0.<br><b>3-arm carrier:</b> optional readout-centre frame. Three centres start 120° apart on the start surface. Their end points are placed on the current closure surface: in Beat-210 mode on the 210 surface after 1/6 turn; in Full-1260 mode on the 1260 surface after 1 full turn. This is separate from the 21-window and ρ=10 decagon/star overlays.<br><b>Carrier–beat lemma overlay:</b> marks the six 210-beat cells as two interleaved triads. Carrier A hits 0, 420, 840; Carrier B is the 210-shifted complement and hits 210, 630, 1050. This visualizes 1260 = 6×210 = 2×3×210 and the candidate reading 6 = A/B × Z₃.<br>
   <b>Radius structure:</b> tp-e R=1.0, ae=R/20=0.05 (micro-amplitude = 1/active duty count 20).
   tp-p: Rp=3R/5=0.60 (Z₃=3, 5=210/42). ρ=10=210/21. M_micro=30=K (locked to C30 grid).
   A/B diametrically opposite: φ_B=φ_A+π. Structure is epicyclic, not a simple helix.
@@ -332,6 +337,12 @@ function draw2(){
   // Pass 4: decagon / {10/3} star
   drawDecagon();
 
+  // Optional 3-arm carrier centres
+  drawCarrier3_2D();
+
+  // Optional Carrier–beat lemma overlay
+  drawCarrierBeatLemma_2D();
+
   // Current position dot
   if(nS>0){
     const[px,py]=xy2(nS);
@@ -497,6 +508,12 @@ function draw3(){
   // ρ=10 chains in 3D
   drawChains3();
 
+  // Optional 3-arm carrier centres
+  drawCarrier3_3D();
+
+  // Optional Carrier–beat lemma overlay
+  drawCarrierBeatLemma_3D();
+
   // Labels
   g3.fillStyle='rgba(150,150,150,.45)'; g3.font='11px sans-serif'; g3.textAlign='center';
   const[lx0,ly0]=pr(0,r+.18,-ZH/2); g3.fillText('PP',lx0,ly0+3);
@@ -507,6 +524,319 @@ function draw3(){
   g3.fillText('Rp=3Re/5  ρ=10',  10,32);
   g3.fillText(`M=K=30   N=${N}`,  10,46);
 }
+
+
+// ─── 3-ARM CARRIER CENTRES ──────────────────────────────────────────────────
+// Corrected interpretation:
+// Start points are on the start surface.
+// End/current points lie on the active closure surface.
+//   Beat 210: t reaches RP/210 surface after 1/6 turn = 60°.
+//   Full 1260: t reaches RP/1260 surface after 1 full turn = 360°.
+// This is a readout-centre frame, not an extra tp spiral.
+
+function showCarrier3(){ return document.getElementById('cCarrier3')?.checked; }
+
+function carrierT(){
+  // progress through the currently selected closure surface
+  return N > 0 ? Math.max(0, Math.min(nS/N, 1)) : 0;
+}
+
+function carrierAngle(){
+  // absolute slow carrier angle normalized to 1260, independent of current N scaling
+  return 2*Math.PI*(nS/1260);
+}
+
+function drawCarrier3_2D(){
+  if(!showCarrier3()) return;
+
+  const t = carrierT();
+  const phi = carrierAngle();
+  const r0 = Rmin2;
+  const r1 = Rmin2 + (Rmax2-Rmin2)*t;
+
+  g2.save();
+
+  for(let j=0;j<3;j++){
+    const a0 = j*2*Math.PI/3;
+    const a1 = a0 + phi;
+
+    const sx = C2 + r0*Math.cos(a0);
+    const sy = C2 + r0*Math.sin(a0);
+    const ex = C2 + r1*Math.cos(a1);
+    const ey = C2 + r1*Math.sin(a1);
+
+    // start marker on start surface
+    g2.fillStyle='rgba(255,255,255,0.28)';
+    g2.beginPath();
+    g2.arc(sx,sy,2.4,0,2*Math.PI);
+    g2.fill();
+
+    // current/end carrier centre
+    g2.fillStyle='rgba(255,255,255,0.88)';
+    g2.beginPath();
+    g2.arc(ex,ey,3.2,0,2*Math.PI);
+    g2.fill();
+
+    // simple readout-centre connection, not a separate spiral
+    g2.strokeStyle='rgba(255,255,255,0.52)';
+    g2.lineWidth=1.0;
+    g2.setLineDash([5,4]);
+    g2.beginPath();
+    g2.moveTo(sx,sy);
+    g2.lineTo(ex,ey);
+    g2.stroke();
+    g2.setLineDash([]);
+
+    // current arm from centre to carrier point
+    g2.strokeStyle='rgba(255,255,255,0.42)';
+    g2.lineWidth=0.9;
+    g2.beginPath();
+    g2.moveTo(C2,C2);
+    g2.lineTo(ex,ey);
+    g2.stroke();
+  }
+
+  g2.fillStyle='rgba(255,255,255,0.58)';
+  g2.font='11px sans-serif';
+  g2.textAlign='center';
+  g2.fillText(
+    N===210 ? '3-arm carrier · endpoint on 210 surface · 60° turn'
+            : '3-arm carrier · endpoint on 1260 surface · 360° turn',
+    C2, C2-Rmax2-12
+  );
+
+  g2.restore();
+}
+
+function drawCarrier3_3D(){
+  if(!showCarrier3()) return;
+
+  const tEnd = carrierT();
+  const phiEnd = carrierAngle();
+  const r = Re + ae + 0.08;
+  const steps = Math.max(2, Math.ceil(90*tEnd));
+
+  g3.save();
+
+  for(let j=0;j<3;j++){
+    const base = j*2*Math.PI/3;
+
+    // Start point on start surface
+    const sx3 = r*Math.cos(base);
+    const sy3 = r*Math.sin(base);
+    const sz3 = -ZH/2;
+
+    // End/current point on the currently selected closure surface.
+    // For N=210 and nS=210 this is RP/210 surface at +ZH/2 and +60°.
+    // For N=1260 and nS=1260 this is RP/1260 surface at +ZH/2 and +360°.
+    const ex3 = r*Math.cos(base+phiEnd);
+    const ey3 = r*Math.sin(base+phiEnd);
+    const ez3 = -ZH/2 + ZH*tEnd;
+
+    // A sparse readout-centre path from start to current/end surface.
+    // It follows the carrier-frame interpolation, not the tp spiral.
+    g3.strokeStyle='rgba(255,255,255,0.56)';
+    g3.lineWidth=1.05;
+    g3.setLineDash([5,4]);
+    g3.beginPath();
+
+    for(let i=0;i<=steps;i++){
+      const u = i/steps;
+      const a = base + phiEnd*u;
+      const z = -ZH/2 + ZH*tEnd*u;
+      const x = r*Math.cos(a);
+      const y = r*Math.sin(a);
+      const [px,py] = pr(x,y,z);
+      if(i===0) g3.moveTo(px,py); else g3.lineTo(px,py);
+    }
+    g3.stroke();
+    g3.setLineDash([]);
+
+    // markers
+    const [psx,psy] = pr(sx3,sy3,sz3);
+    const [pex,pey] = pr(ex3,ey3,ez3);
+
+    g3.fillStyle='rgba(255,255,255,0.30)';
+    g3.beginPath(); g3.arc(psx,psy,2.3,0,2*Math.PI); g3.fill();
+
+    g3.fillStyle='rgba(255,255,255,0.90)';
+    g3.beginPath(); g3.arc(pex,pey,3.0,0,2*Math.PI); g3.fill();
+  }
+
+  g3.restore();
+}
+
+
+
+// ─── CARRIER–BEAT LEMMA OVERLAY ─────────────────────────────────────────────
+// Shows the six 210-beat cells as two interleaved triads:
+//   Carrier A: 0, 420, 840
+//   Carrier B: 210, 630, 1050
+// This visualizes 1260 = 6×210 = 2×3×210 and the candidate split 6 = A/B × Z₃.
+
+const BEAT_A_COL = '#42E08A';
+const BEAT_B_COL = '#FF5AB3';
+
+function showBeatLemma(){ return document.getElementById('cBeatLemma')?.checked; }
+function beatLemmaVisibleN(n){ return n<=nS && n<=N; }
+
+function drawCarrierBeatLemma_2D(){
+  if(!showBeatLemma()) return;
+
+  const A=[0,420,840], B=[210,630,1050];
+  const rLab=Rmax2+26;
+
+  function drawSet(arr, col, label){
+    const pts=[];
+    arr.forEach((n,idx)=>{
+      if(!beatLemmaVisibleN(n)) return;
+      const p = (n===0) ? [C2+Rmin2, C2] : xy2(n);
+      pts.push({n,p});
+
+      // strong marker on the actual closure/readout point
+      g2.save();
+      g2.fillStyle=col;
+      g2.strokeStyle='rgba(0,0,0,0.85)';
+      g2.lineWidth=1.0;
+      g2.beginPath();
+      g2.arc(p[0],p[1],5.2,0,2*Math.PI);
+      g2.fill();
+      g2.stroke();
+
+      g2.fillStyle=col;
+      g2.font='10px sans-serif';
+      g2.textAlign='center';
+      g2.fillText(String(n), p[0], p[1]-9);
+      g2.restore();
+    });
+
+    // connect visible members of each triad softly
+    if(pts.length>=2){
+      g2.save();
+      g2.strokeStyle=col;
+      g2.lineWidth=1.45;
+      g2.globalAlpha=0.62;
+      g2.setLineDash([5,4]);
+      g2.beginPath();
+      g2.moveTo(pts[0].p[0], pts[0].p[1]);
+      for(let i=1;i<pts.length;i++) g2.lineTo(pts[i].p[0], pts[i].p[1]);
+      g2.stroke();
+      g2.restore();
+    }
+
+    // show the carrier phase positions on an outer guide ring.
+    arr.forEach((n)=>{
+      if(!beatLemmaVisibleN(n)) return;
+      const a = 2*Math.PI*(n/1260);
+      const x = C2+rLab*Math.cos(a);
+      const y = C2+rLab*Math.sin(a);
+      g2.save();
+      g2.fillStyle=col;
+      g2.globalAlpha=0.92;
+      g2.beginPath();
+      g2.arc(x,y,3.2,0,2*Math.PI);
+      g2.fill();
+      g2.globalAlpha=1;
+      g2.strokeStyle=col;
+      g2.lineWidth=0.9;
+      g2.setLineDash([3,3]);
+      const p = (n===0) ? [C2+Rmin2, C2] : xy2(n);
+      g2.beginPath();
+      g2.moveTo(x,y);
+      g2.lineTo(p[0],p[1]);
+      g2.stroke();
+      g2.restore();
+    });
+  }
+
+  g2.save();
+  g2.strokeStyle='rgba(255,255,255,0.18)';
+  g2.lineWidth=0.7;
+  g2.setLineDash([4,4]);
+  g2.beginPath();
+  g2.arc(C2,C2,rLab,0,2*Math.PI);
+  g2.stroke();
+  g2.restore();
+
+  drawSet(A, BEAT_A_COL, 'A');
+  drawSet(B, BEAT_B_COL, 'B');
+
+  g2.save();
+  g2.fillStyle='rgba(255,255,255,0.70)';
+  g2.font='11px sans-serif';
+  g2.textAlign='center';
+  g2.fillText('Carrier–beat: A={0,420,840} · B={210,630,1050}', C2, C2+Rmax2+45);
+  g2.restore();
+}
+
+function drawCarrierBeatLemma_3D(){
+  if(!showBeatLemma()) return;
+
+  const A=[0,420,840], B=[210,630,1050];
+  const r = Re+ae+0.16;
+
+  function drawBeatTriad(arr, col, name){
+    const pts=[];
+    arr.forEach(n=>{
+      if(!beatLemmaVisibleN(n)) return;
+      const t = n/N;                        // active surface position in chosen closure
+      const a = 2*Math.PI*(n/1260);         // carrier phase: 60° per 210
+      const z = -ZH/2 + ZH*t;
+      const x = r*Math.cos(a);
+      const y = r*Math.sin(a);
+      pts.push([x,y,z,n]);
+
+      const [px,py]=pr(x,y,z);
+      g3.save();
+      g3.fillStyle=col;
+      g3.strokeStyle='rgba(0,0,0,0.85)';
+      g3.lineWidth=0.8;
+      g3.beginPath();
+      g3.arc(px,py,3.4,0,2*Math.PI);
+      g3.fill();
+      g3.stroke();
+      g3.fillStyle=col;
+      g3.font='9px sans-serif';
+      g3.textAlign='center';
+      g3.fillText(String(n), px, py-7);
+      g3.restore();
+
+      // small phase radius on the beat surface
+      g3.save();
+      g3.strokeStyle=col;
+      g3.globalAlpha=0.45;
+      g3.lineWidth=0.75;
+      g3.setLineDash([3,3]);
+      const [cx0,cy0]=pr(0,0,z);
+      g3.beginPath();
+      g3.moveTo(cx0,cy0);
+      g3.lineTo(px,py);
+      g3.stroke();
+      g3.restore();
+    });
+
+    if(pts.length>=2){
+      g3.save();
+      g3.strokeStyle=col;
+      g3.lineWidth=1.25;
+      g3.globalAlpha=0.68;
+      g3.setLineDash([5,4]);
+      g3.beginPath();
+      let [p0x,p0y]=pr(pts[0][0],pts[0][1],pts[0][2]);
+      g3.moveTo(p0x,p0y);
+      for(let i=1;i<pts.length;i++){
+        const [px,py]=pr(pts[i][0],pts[i][1],pts[i][2]);
+        g3.lineTo(px,py);
+      }
+      g3.stroke();
+      g3.restore();
+    }
+  }
+
+  drawBeatTriad(A, BEAT_A_COL, 'A');
+  drawBeatTriad(B, BEAT_B_COL, 'B');
+}
+
 
 // ─── MOUSE / TOUCH ───────────────────────────────────────────────────────────
 function onDS(cx,cy){drag=true;lx=cx;ly=cy;}
@@ -529,10 +859,10 @@ function upd(){
   const turn=(nS/30).toFixed(2);
 
   if(nS===N&&N===210){
-    el.innerHTML='<b style="color:#bbb">Beat closure ↩</b> — 7 turns · 10×21-windows · 30 seams · 2100 tp-p turns'; return;
+    el.innerHTML='<b style="color:#bbb">Beat closure ↩</b> — 7 turns · 10×21-windows · 30 seams · 2100 tp-p turns · carrier end = 210 surface / 60°'; return;
   }
   if(nS===N&&N===1260){
-    el.innerHTML='<b style="color:#bbb">Full closure ↩</b> — 42 turns=6×7 · 60×21-windows · 180 seams · 12600 tp-p turns'; return;
+    el.innerHTML='<b style="color:#bbb">Full closure ↩</b> — 42 turns=6×7 · 60×21-windows · 180 seams · 12600 tp-p turns · carrier end = 1260 surface / 360°'; return;
   }
 
   const w21str = pos21===0
@@ -579,5 +909,342 @@ function resetView(){rX=.42;rY=.52;draw3();}
 // ─── INIT ────────────────────────────────────────────────────────────────────
 draw2();draw3();upd();
 </script>
+
+<script>
+// ─── PATCH v2: smooth ρ=10 in 3D + carrier path in 2D ──────────────────────
+// Fix 1: cDeca in 3D should not appear as long straight chords. Draw the ρ=10
+//        chains as smooth readout-helices, with a small current decagon on the
+//        active closure surface.
+// Fix 2: the 3-arm carrier in 2D should show the path from start to current
+//        surface, not only the current point.
+
+drawChains3 = function(){
+  if(!document.getElementById('cDeca').checked) return;
+  const C=N/21;
+  if(C!==Math.floor(C)) return;
+
+  const r = Re + ae + 0.13;
+  const maxK = Math.floor(Math.min(nS, N)/21);
+  if(maxK < 1) return;
+
+  function pointFromK(k){
+    // Raw 21-boundary phase, but shown as the slow modulo-10 readout chain.
+    const a = (2*Math.PI) * (((21*k)%30) / 30);
+    const z = -ZH/2 + ZH*((21*k)/N);
+    return [r*Math.cos(a), r*Math.sin(a), z];
+  }
+
+  chainSeqs(C).forEach((seq,ci)=>{
+    const avail = seq.filter(k=>k<=maxK);
+    if(avail.length<1) return;
+
+    g3.save();
+    g3.strokeStyle=CHAIN_COLS[ci];
+    g3.lineWidth=1.55;
+    g3.globalAlpha=0.86;
+    g3.setLineDash([]);
+    g3.beginPath();
+
+    let started=false;
+
+    for(let ii=0; ii<avail.length-1; ii++){
+      const k0=avail[ii], k1=avail[ii+1];
+      const p0=pointFromK(k0);
+
+      // consecutive chain points advance +36° in the readout view
+      const a0 = Math.atan2(p0[1], p0[0]);
+      const z0 = p0[2];
+      const z1 = -ZH/2 + ZH*((21*k1)/N);
+      const samples=14;
+
+      for(let s=0;s<=samples;s++){
+        const u=s/samples;
+        const a=a0 + (2*Math.PI/10)*u;
+        const z=z0 + (z1-z0)*u;
+        const x=r*Math.cos(a), y=r*Math.sin(a);
+        const [px,py]=pr(x,y,z);
+        if(!started){ g3.moveTo(px,py); started=true; }
+        else g3.lineTo(px,py);
+      }
+    }
+
+    // If only one point is available, show it.
+    if(avail.length===1){
+      const p=pointFromK(avail[0]);
+      const [px,py]=pr(p[0],p[1],p[2]);
+      g3.moveTo(px,py);
+      g3.arc(px,py,2.1,0,2*Math.PI);
+    }
+
+    g3.stroke();
+    g3.globalAlpha=1;
+    g3.restore();
+
+    // boundary dots
+    g3.save();
+    g3.fillStyle=CHAIN_COLS[ci];
+    g3.globalAlpha=0.82;
+    avail.forEach(k=>{
+      const p=pointFromK(k);
+      const [px,py]=pr(p[0],p[1],p[2]);
+      g3.beginPath();
+      g3.arc(px,py,2.1,0,2*Math.PI);
+      g3.fill();
+    });
+    g3.restore();
+  });
+
+  // Draw a small ρ=10 decagon on the active/current closure surface.
+  const t = Math.max(0, Math.min(nS/N, 1));
+  const zc = -ZH/2 + ZH*t;
+  g3.save();
+  g3.strokeStyle='rgba(255,255,255,0.24)';
+  g3.lineWidth=0.75;
+  g3.setLineDash([3,3]);
+  g3.beginPath();
+  for(let i=0;i<=10;i++){
+    const a=2*Math.PI*i/10;
+    const [px,py]=pr(r*Math.cos(a), r*Math.sin(a), zc);
+    if(i===0) g3.moveTo(px,py); else g3.lineTo(px,py);
+  }
+  g3.stroke();
+  g3.setLineDash([]);
+  g3.restore();
+};
+
+drawCarrier3_2D = function(){
+  if(!showCarrier3()) return;
+
+  const t = carrierT();              // progress through current selected closure surface
+  const phiEnd = carrierAngle();     // absolute slow turn: 60° at 210, 360° at 1260
+  const r0 = Rmin2;
+  const fullLabel = (N===210)
+    ? '3-arm carrier · path to 210 surface · 60°'
+    : '3-arm carrier · path to 1260 surface · 360°';
+
+  g2.save();
+
+  for(let j=0;j<3;j++){
+    const base = j*2*Math.PI/3;
+
+    // Draw actual path from start to current/end surface.
+    // Radius grows to the selected closure surface while angle advances by phiEnd.
+    const samples = Math.max(8, Math.ceil(120*t));
+    g2.strokeStyle='rgba(255,255,255,0.55)';
+    g2.lineWidth=1.05;
+    g2.setLineDash([5,4]);
+    g2.beginPath();
+
+    for(let i=0;i<=samples;i++){
+      const u = i/samples;
+      const rr = r0 + (Rmax2-r0)*t*u;
+      const a = base + phiEnd*u;
+      const x = C2 + rr*Math.cos(a);
+      const y = C2 + rr*Math.sin(a);
+      if(i===0) g2.moveTo(x,y); else g2.lineTo(x,y);
+    }
+    g2.stroke();
+    g2.setLineDash([]);
+
+    // Start point
+    const sx = C2 + r0*Math.cos(base);
+    const sy = C2 + r0*Math.sin(base);
+    g2.fillStyle='rgba(255,255,255,0.30)';
+    g2.beginPath();
+    g2.arc(sx,sy,2.5,0,2*Math.PI);
+    g2.fill();
+
+    // Current/end point on active closure surface
+    const re = r0 + (Rmax2-r0)*t;
+    const ex = C2 + re*Math.cos(base+phiEnd);
+    const ey = C2 + re*Math.sin(base+phiEnd);
+    g2.fillStyle='rgba(255,255,255,0.90)';
+    g2.beginPath();
+    g2.arc(ex,ey,3.3,0,2*Math.PI);
+    g2.fill();
+
+    // Arm from origin to current point
+    g2.strokeStyle='rgba(255,255,255,0.38)';
+    g2.lineWidth=0.8;
+    g2.beginPath();
+    g2.moveTo(C2,C2);
+    g2.lineTo(ex,ey);
+    g2.stroke();
+  }
+
+  g2.fillStyle='rgba(255,255,255,0.58)';
+  g2.font='11px sans-serif';
+  g2.textAlign='center';
+  g2.fillText(fullLabel, C2, C2-Rmax2-12);
+
+  g2.restore();
+};
+
+draw2(); draw3(); upd();
+</script>
+
+
+<script>
+// ─── PATCH v3: smooth ρ=10 decagon/chains in 2D ────────────────────────────
+// The 2D decagon/readout chains are redrawn with smooth quadratic segments,
+// so they read more like the 3-arm carrier paths.
+
+drawDecagon = function(){
+  if(!document.getElementById('cDeca').checked) return;
+  const C=N/21;
+  if(C!==Math.floor(C)) return;
+
+  const pts={};
+  for(let k=1;k<=C;k++){
+    const n=k*21;
+    if(n<=nS) pts[k]=xy2(n);
+  }
+
+  function smoothStroke(list, color){
+    if(list.length<2) return;
+    g2.save();
+    g2.strokeStyle=color;
+    g2.lineWidth=1.55;
+    g2.globalAlpha=0.80;
+    g2.lineCap='round';
+    g2.lineJoin='round';
+    g2.setLineDash([]);
+    g2.beginPath();
+    g2.moveTo(list[0][0], list[0][1]);
+
+    if(list.length===2){
+      g2.lineTo(list[1][0], list[1][1]);
+    } else {
+      for(let i=1;i<list.length-1;i++){
+        const xc=(list[i][0]+list[i+1][0])/2;
+        const yc=(list[i][1]+list[i+1][1])/2;
+        g2.quadraticCurveTo(list[i][0], list[i][1], xc, yc);
+      }
+      const n=list.length;
+      g2.quadraticCurveTo(list[n-1][0], list[n-1][1], list[n-1][0], list[n-1][1]);
+    }
+    g2.stroke();
+    g2.restore();
+  }
+
+  chainSeqs(C).forEach((seq,ci)=>{
+    const avail=seq.filter(k=>pts[k]);
+    if(avail.length<2) return;
+    const list=avail.map(k=>pts[k]);
+    smoothStroke(list, CHAIN_COLS[ci]);
+
+    // optional faint boundary dots to keep the sampled 21-structure visible
+    g2.save();
+    g2.fillStyle=CHAIN_COLS[ci];
+    g2.globalAlpha=0.45;
+    list.forEach(([x,y])=>{
+      g2.beginPath();
+      g2.arc(x,y,1.9,0,2*Math.PI);
+      g2.fill();
+    });
+    g2.restore();
+  });
+
+  if(nS>=210){
+    g2.save();
+    g2.fillStyle='rgba(255,200,255,0.55)';
+    g2.font='11px sans-serif';
+    g2.textAlign='center';
+    g2.fillText('ρ=10 · 36° · 3 chains · smooth 2D', C2, C2+Rmax2+16);
+    g2.restore();
+  }
+};
+
+draw2(); draw3(); upd();
+</script>
+
+
+<script>
+// ─── PATCH v4: interpolerande mjuk 2D-kedja ────────────────────────────────
+// Ersätter v3-utjämningen. Den här Catmull–Rom/Bezier-varianten passerar
+// genom varje faktisk 21/ρ=10-punkt i 2D-vyn, men ritar banan mjukt.
+
+drawDecagon = function(){
+  if(!document.getElementById('cDeca').checked) return;
+  const C=N/21;
+  if(C!==Math.floor(C)) return;
+
+  const pts={};
+  for(let k=1;k<=C;k++){
+    const n=k*21;
+    if(n<=nS) pts[k]=xy2(n);
+  }
+
+  function drawCatmullRomThrough(points, color){
+    if(points.length<2) return;
+
+    g2.save();
+    g2.strokeStyle=color;
+    g2.lineWidth=1.55;
+    g2.globalAlpha=0.82;
+    g2.lineCap='round';
+    g2.lineJoin='round';
+    g2.setLineDash([]);
+    g2.beginPath();
+    g2.moveTo(points[0][0], points[0][1]);
+
+    if(points.length===2){
+      g2.lineTo(points[1][0], points[1][1]);
+    } else {
+      for(let i=0;i<points.length-1;i++){
+        const p0 = points[Math.max(0, i-1)];
+        const p1 = points[i];
+        const p2 = points[i+1];
+        const p3 = points[Math.min(points.length-1, i+2)];
+
+        // Catmull-Rom -> cubic Bezier. Kurvan går exakt genom p1 och p2.
+        const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
+        const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
+        const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
+        const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+
+        g2.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2[0], p2[1]);
+      }
+    }
+
+    g2.stroke();
+    g2.restore();
+  }
+
+  chainSeqs(C).forEach((seq,ci)=>{
+    const avail=seq.filter(k=>pts[k]);
+    if(avail.length<2) return;
+    const list=avail.map(k=>pts[k]);
+
+    drawCatmullRomThrough(list, CHAIN_COLS[ci]);
+
+    // Markera de exakta punkterna ovanpå, så man ser att kurvan passerar dem.
+    g2.save();
+    g2.fillStyle=CHAIN_COLS[ci];
+    g2.strokeStyle='rgba(24,24,24,0.9)';
+    g2.lineWidth=0.7;
+    g2.globalAlpha=0.95;
+    list.forEach(([x,y])=>{
+      g2.beginPath();
+      g2.arc(x,y,2.6,0,2*Math.PI);
+      g2.fill();
+      g2.stroke();
+    });
+    g2.restore();
+  });
+
+  if(nS>=210){
+    g2.save();
+    g2.fillStyle='rgba(255,200,255,0.55)';
+    g2.font='11px sans-serif';
+    g2.textAlign='center';
+    g2.fillText('ρ=10 · 36° · 3 chains · smooth through points', C2, C2+Rmax2+16);
+    g2.restore();
+  }
+};
+
+draw2(); draw3(); upd();
+</script>
+
 </body>
 </html>
