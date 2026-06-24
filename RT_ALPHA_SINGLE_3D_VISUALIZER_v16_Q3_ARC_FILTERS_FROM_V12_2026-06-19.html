@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RT alfa visualiserare v16 — Q3-bågfilter från v12</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:#ddd;font:13px system-ui,Segoe UI,Arial,sans-serif}
+#bar{padding:9px;background:#171717;border-bottom:1px solid #2b2b2b;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+button{background:#202020;color:#ddd;border:1px solid #444;border-radius:6px;padding:5px 9px;cursor:pointer}
+button:hover{background:#2a2a2a}
+label{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+input,select{accent-color:#7f77dd;background:#111;color:#ddd;border:1px solid #444;border-radius:5px}
+input[type=number]{width:86px;padding:3px 5px}
+input[type=range]{width:140px}
+canvas{display:block;width:100vw;height:calc(100vh - 126px);min-height:560px;background:#09090b}
+#status{padding:7px 10px;background:#171717;border-top:1px solid #2b2b2b;color:#aaa;font:12px ui-monospace,Menlo,Consolas,monospace}
+.grp{border:1px solid #2d2d2d;border-radius:7px;padding:5px 7px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+<div id="bar">
+  <div class="grp">
+    <button id="play">▶</button>
+    <button id="bf1">+1 BF</button>
+    <button id="t1">+1t</button>
+    <button id="t7">+7t</button>
+    <button id="t21">+21t</button>
+    <button id="t70">+70t</button>
+    <button id="reset">↺</button>
+  </div>
+  <div class="grp">
+    <label>Total ticks <input id="total" type="number" min="210" max="47000" step="210" value="1260"></label>
+    <label>BF <input id="bf" type="range" min="0" max="12600" step="1" value="12600"></label>
+    <span id="bfv">12600/12600</span>
+  </div>
+  <div class="grp">
+    <label>Play <select id="unit"><option value="bf">BF</option><option value="tick">tick</option></select></label>
+    <label>Speed <input id="speed" type="range" min="1" max="10" value="5"></label>
+    <label>Zoom <input id="zoom" type="range" min="60" max="340" value="135"></label>
+    <button id="view">View ↺</button>
+  </div>
+  <div class="grp">
+    <label>Svans ticks <input id="tail" type="range" min="0" max="5000" value="840"></label>
+    <span id="tailv">840</span>
+    <label>Toning <input id="fade" type="range" min="0.2" max="4" step="0.1" value="1.4"></label>
+  </div>
+  <div class="grp">
+    <label><input id="eA" type="checkbox" checked>tp-e A</label>
+    <label><input id="eB" type="checkbox">tp-e B</label>
+    <label><input id="pA" type="checkbox" checked>tp-p A</label>
+    <label><input id="pB" type="checkbox">tp-p B</label>
+    <label><input id="bfDots" type="checkbox" checked>BF</label>
+    <label><input id="surfaces" type="checkbox" checked>ytor</label>
+  </div>
+  <div class="grp">
+    <label><input id="ticks" type="checkbox" checked>tickpunkter</label>
+    <label><input id="Rsup" type="checkbox" checked>R</label>
+    <label><input id="Csup" type="checkbox" checked>C30</label>
+    <label><input id="Qsup" type="checkbox" checked>Q3</label>
+    <label><input id="u0" type="checkbox" checked>u=0</label>
+    <label><input id="ports" type="checkbox" checked>Z10</label>
+    <label><input id="rho" type="checkbox" checked>ρ10</label>
+    <label><input id="arc0" type="checkbox" checked>Q3-båge 0</label>
+    <label><input id="arc1" type="checkbox" checked>Q3-båge 1</label>
+    <label><input id="arc2" type="checkbox" checked>Q3-båge 2</label>
+    <label><input id="carrier" type="checkbox" checked>3-arm</label>
+  </div>
+</div>
+<canvas id="cv"></canvas>
+<div id="status"></div>
+<script>
+(function(){
+"use strict";
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+const $=id=>document.getElementById(id);
+const UI={play:$("play"),bf1:$("bf1"),t1:$("t1"),t7:$("t7"),t21:$("t21"),t70:$("t70"),reset:$("reset"),view:$("view"),
+total:$("total"),bf:$("bf"),bfv:$("bfv"),unit:$("unit"),speed:$("speed"),zoom:$("zoom"),tail:$("tail"),tailv:$("tailv"),fade:$("fade"),
+eA:$("eA"),eB:$("eB"),pA:$("pA"),pB:$("pB"),bfDots:$("bfDots"),surfaces:$("surfaces"),ticks:$("ticks"),Rsup:$("Rsup"),Csup:$("Csup"),Qsup:$("Qsup"),u0:$("u0"),ports:$("ports"),rho:$("rho"),arc0:$("arc0"),arc1:$("arc1"),arc2:$("arc2"),carrier:$("carrier"),status:$("status")};
+const cfg={BF:10,Re:1,ae:.05,Rp:.60,ap:.03,M:30,rho:10,ZH:6.6,readR:1.35};
+const col={eA:"#4A9ECC",eB:"#6BAED6",pA:"#8C564B",pB:"#C49C94",bf:"#9ED9FF",tick:"#e8e8e8",R:"#c084fc",C:"#efc94c",Q:"#42e08a",u0:"#42e08a"};
+const portCols=["#ff4d4d","#ff9f1c","#ffd166","#8ac926","#42e08a","#00c2ff","#5dade2","#7f77dd","#c084fc","#ff66c4"];
+const rhoCols=["#ff9eff","#88ddff","#ffcc77"];
+let S={T:1260,bf:12600,tail:840,fade:1.4,rx:.48,ry:.55,zoom:135,playing:false,last:0,drag:false,lx:0,ly:0};
+function totalBF(){return S.T*cfg.BF}
+function tf(){return S.bf/cfg.BF}
+function ti(){return Math.floor(tf())}
+function closureCycle(t){return Math.floor(Math.max(0,t)/1260)}
+function closureRemainder(t){let r=((t%1260)+1260)%1260; return r}
+function foldedQ(t){let c=closureCycle(t),r=closureRemainder(t)/1260; return (c%2===0)?r:1-r}
+function zOfTick(t){return (foldedQ(t)-.5)*cfg.ZH}
+function sideOfTick(t){return closureCycle(t)%2===0?'A/up':'B/down'}
+function beat(t){return ((Math.floor(t)%210)+210)%210}
+function inR(t){return beat(t)%10===0}
+function inC(t){return beat(t)%7===0}
+function inQ(t){return beat(t)%70===0}
+function c30(t){if(!inC(t))return null;let b=beat(t)/7;return {b:b,s:Math.floor(b/10),u:b%10}}
+function normAngle(A){let x=A%(2*Math.PI);return x<0?x+2*Math.PI:x}
+function arcOfAngle(A){return Math.max(0,Math.min(2,Math.floor(normAngle(A)/(2*Math.PI/3))))}
+function arcOfTick(t){return Math.max(0,Math.min(2,Math.floor(((((t%30)+30)%30))/10)))}
+function arcOn(a){return (a===0&&UI.arc0.checked)||(a===1&&UI.arc1.checked)||(a===2&&UI.arc2.checked)}
+function angleVisible(A){return arcOn(arcOfAngle(A))}
+function tickVisibleByArc(t){return arcOn(arcOfTick(t))}
+function resize(){let d=window.devicePixelRatio||1,r=cv.getBoundingClientRect();cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);ctx.setTransform(d,0,0,d,0,0);draw()}
+function sync(){UI.bf.max=totalBF();UI.bf.value=S.bf;UI.bfv.textContent=S.bf+"/"+totalBF();UI.tailv.textContent=S.tail}
+function setT(v){S.T=Math.max(210,Math.min(47000,Math.round(v)||1260));UI.total.value=S.T;S.bf=Math.min(S.bf,totalBF());sync();draw()}
+function setBF(v){S.bf=Math.max(0,Math.min(totalBF(),Math.round(v)||0));sync();draw()}
+function proj(x,y,z){let cy=Math.cos(S.ry),sy=Math.sin(S.ry),x1=x*cy+z*sy,z1=-x*sy+z*cy,cx=Math.cos(S.rx),sx=Math.sin(S.rx),y1=y*cx-z1*sx;return [cv.clientWidth/2+x1*S.zoom,cv.clientHeight/2-y1*S.zoom]}
+function spiral(tp,branch,bf){
+  let u=totalBF()?bf/totalBF():0,R=tp==="e"?cfg.Re:cfg.Rp,a=tp==="e"?cfg.ae:cfg.ap,turns=(tp==="e"?S.T/30:cfg.rho*S.T/30);
+  let phi=turns*2*Math.PI*u+(branch==="B"?Math.PI:0),th=cfg.M*phi,cr=Math.cos(phi),sr=Math.sin(phi);
+  let x=R*cr+a*(Math.cos(th)*cr+Math.sin(th)*(-sr));
+  let y=R*sr+a*(Math.cos(th)*sr+Math.sin(th)*cr);
+  let z=zOfTick(bf/cfg.BF);
+  return [x,y,z];
+}
+function readPoint(t){let A=2*Math.PI*((((t%30)+30)%30)/30),r=cfg.readR,z=zOfTick(t);return [r*Math.cos(A),r*Math.sin(A),z]}
+function portPoint(port,t){let c=c30(t),s=c?c.s:0,A=2*Math.PI*((10*s+port)/30),r=cfg.readR,z=zOfTick(t);return [r*Math.cos(A),r*Math.sin(A),z]}
+function ring(z,r,stroke,alpha,w,fill,fa){
+  ctx.save();ctx.beginPath();for(let i=0;i<=128;i++){let A=2*Math.PI*i/128,p=proj(r*Math.cos(A),r*Math.sin(A),z);if(i===0)ctx.moveTo(p[0],p[1]);else ctx.lineTo(p[0],p[1])}
+  ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.globalAlpha=fa;ctx.fill()}ctx.strokeStyle=stroke;ctx.globalAlpha=alpha;ctx.lineWidth=w;ctx.stroke();ctx.restore()
+}
+function alpha(bf){let span=S.tail*cfg.BF,age=S.bf-bf,f=span?age/Math.max(1,span):1;return Math.max(.04,1-Math.pow(f,S.fade))}
+function drawAxes(){
+  if(!UI.surfaces.checked)return;
+  ring(-cfg.ZH/2,cfg.readR,"#8ec5ff",.95,1.6,"#1a3552",.22);
+  ring(cfg.ZH/2,cfg.readR,"#ffb0f2",.95,1.6,"#3a2a4d",.18);
+  ctx.save();ctx.strokeStyle="rgba(230,230,230,.55)";ctx.lineWidth=1.1;ctx.setLineDash([5,4]);let a=proj(0,0,-cfg.ZH/2),b=proj(0,0,cfg.ZH/2);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.restore()
+}
+function drawSp(tp,br,color,w,show){
+  if(!show)return;let start=Math.max(0,S.bf-S.tail*cfg.BF),step=1,prev=null;
+  for(let b=start;b<=S.bf;b+=step){let q=spiral(tp,br,b),p=proj(q[0],q[1],q[2]);if(prev){ctx.save();ctx.strokeStyle=color;ctx.globalAlpha=alpha(b)*(tp==="e"?.92:.72);ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(prev[0],prev[1]);ctx.lineTo(p[0],p[1]);ctx.stroke();ctx.restore()}prev=p}
+  if(prev){ctx.save();ctx.fillStyle=color;ctx.beginPath();ctx.arc(prev[0],prev[1],br==="A"?3.2:2.5,0,Math.PI*2);ctx.fill();ctx.restore()}
+}
+function drawBFDots(){
+  if(!UI.bfDots.checked)return;let start=Math.max(0,S.bf-S.tail*cfg.BF),span=S.bf-start,step=Math.max(1,Math.ceil(span/6500));ctx.save();ctx.fillStyle=col.bf;
+  for(let b=start;b<=S.bf;b+=step){if(b%cfg.BF===0)continue;let q=spiral("p","A",b),p=proj(q[0],q[1],q[2]);ctx.globalAlpha=.35*alpha(b);ctx.beginPath();ctx.arc(p[0],p[1],1.1,0,Math.PI*2);ctx.fill()}
+  ctx.restore()
+}
+function drawPortLine(port,strong){
+  let st=Math.max(0,Math.floor((S.bf-S.tail*cfg.BF)/cfg.BF)),en=ti(),pts=[];
+  for(let k=Math.floor(st/210)-1;k<=Math.floor(en/210)+1;k++){let base=k*210;for(let s=0;s<3;s++){let t=base+7*port+70*s;if(t>=st&&t<=en&&t>=0&&t<=S.T&&arcOn(s))pts.push(t)}}
+  if(pts.length<2)return;pts.sort((a,b)=>a-b);let pc=strong?col.u0:portCols[port%10];
+  ctx.save();ctx.strokeStyle=pc;ctx.globalAlpha=strong?1:.85;ctx.lineWidth=strong?3:1.65;if(!strong)ctx.setLineDash([4,5]);ctx.beginPath();
+  pts.forEach((t,i)=>{let q=portPoint(port,t),p=proj(q[0],q[1],q[2]);if(i===0)ctx.moveTo(p[0],p[1]);else ctx.lineTo(p[0],p[1])});ctx.stroke();ctx.setLineDash([]);
+  pts.forEach(t=>{let q=portPoint(port,t),p=proj(q[0],q[1],q[2]);ctx.fillStyle=pc;ctx.globalAlpha=strong?1:.9;ctx.beginPath();ctx.arc(p[0],p[1],strong?3.6:2.1,0,Math.PI*2);ctx.fill()});
+  ctx.restore()
+}
+function drawPorts(){
+  if(UI.ports.checked)for(let u=0;u<10;u++)drawPortLine(u,u===0&&UI.u0.checked);
+  else if(UI.u0.checked)drawPortLine(0,true)
+}
+function drawRho(){
+  if(!UI.rho.checked)return;let start=tf()-S.tail,end=tf(),r=cfg.readR;
+  function firstEvent(chain,startTick){let t0=21*(chain+1);if(startTick<=t0)return t0;return t0+63*Math.ceil((startTick-t0)/63)}
+  function lastEvent(chain,endTick){let t0=21*(chain+1);if(endTick<t0)return null;return t0+63*Math.floor((endTick-t0)/63)}
+  function rhoAngle(chain,t){let t0=21*(chain+1);let A0=2*Math.PI*((t0%30)/30);return A0+2*Math.PI*((t-t0)/630)}
+  function rhoPoint(chain,t){let A=rhoAngle(chain,t),z=zOfTick(t),r=cfg.readR;return [r*Math.cos(A),r*Math.sin(A),z]}
+  for(let ci=0;ci<3;ci++){
+    let tStart=firstEvent(ci,start), tEnd=lastEvent(ci,end);
+    if(tEnd===null || tStart>=tEnd) continue;
+    ctx.save();
+    ctx.strokeStyle=rhoCols[ci];
+    ctx.globalAlpha=1;
+    ctx.lineWidth=2.35;
+    let active=false;
+    for(let t=tStart;t<=tEnd;t+=1){
+      let A=rhoAngle(ci,t);
+      if(!angleVisible(A)){ if(active){ctx.stroke(); active=false;} continue; }
+      let q=rhoPoint(ci,t),p=proj(q[0],q[1],q[2]);
+      if(!active){ctx.beginPath(); ctx.moveTo(p[0],p[1]); active=true;} else ctx.lineTo(p[0],p[1]);
+    }
+    if(active) ctx.stroke();
+    for(let t=tStart;t<=tEnd;t+=63){
+      let A=rhoAngle(ci,t);
+      if(!angleVisible(A)) continue;
+      let q=rhoPoint(ci,t),p=proj(q[0],q[1],q[2]);
+      ctx.fillStyle=rhoCols[ci];
+      ctx.beginPath(); ctx.arc(p[0],p[1],2.6,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+function drawCarrier(){
+  if(!UI.carrier.checked)return;let now=tf(),cycleStart=closureCycle(now)*1260,r=cfg.readR;
+  for(let j=0;j<3;j++){
+    let base=j*2*Math.PI/3;ctx.save();ctx.strokeStyle="rgba(255,255,255,.95)";ctx.lineWidth=1.8;ctx.setLineDash([5,4]);
+    let active=false,last=null;
+    for(let i=0;i<=160;i++){
+      let u=i/160,t=cycleStart+(now-cycleStart)*u,A=base+2*Math.PI*(t/1260);
+      if(!angleVisible(A)){ if(active){ctx.stroke(); active=false;} continue; }
+      let z=zOfTick(t),p=proj(r*Math.cos(A),r*Math.sin(A),z);
+      if(!active){ctx.beginPath();ctx.moveTo(p[0],p[1]);active=true}else ctx.lineTo(p[0],p[1]);
+      last=p;
+    }
+    if(active) ctx.stroke();
+    ctx.setLineDash([]);
+    if(last){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(last[0],last[1],3.1,0,Math.PI*2);ctx.fill()}
+    ctx.restore()
+  }
+}
+function drawSupport(){
+  let st=Math.max(0,Math.floor((S.bf-S.tail*cfg.BF)/cfg.BF)),en=ti();
+  for(let t=st;t<=en;t++){let b=t*cfg.BF;if(b>S.bf||!tickVisibleByArc(t))continue;let marks=[];
+    if(UI.ticks.checked&&t>0)marks.push([col.tick,2,.48]);
+    if(UI.Rsup.checked&&inR(t))marks.push([col.R,3.3,1]);
+    if(UI.Csup.checked&&inC(t))marks.push([col.C,3.1,1]);
+    if(UI.Qsup.checked&&inQ(t))marks.push([col.Q,5.5,1]);
+    if(!marks.length)continue;let q=readPoint(t),p=proj(q[0],q[1],q[2]),a=alpha(b);
+    marks.forEach((m,i)=>{ctx.save();ctx.globalAlpha=m[2]*a;ctx.fillStyle=m[0];ctx.strokeStyle="#000";ctx.lineWidth=.8;ctx.beginPath();ctx.arc(p[0]+i*1.8,p[1]-i*1.8,m[1],0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()})
+  }
+}
+function draw(){
+  ctx.clearRect(0,0,cv.clientWidth,cv.clientHeight);
+  drawAxes();
+  drawSp("p","B",col.pB,.85,UI.pB.checked);
+  drawSp("p","A",col.pA,1,UI.pA.checked);
+  drawBFDots();
+  drawSp("e","B",col.eB,1.1,UI.eB.checked);
+  drawSp("e","A",col.eA,1.75,UI.eA.checked);
+  drawPorts();drawRho();drawCarrier();drawSupport();
+  let c=c30(ti()),cls=inQ(ti())?"H_CONTACT_ELIGIBLE":inR(ti())?"PP_RETURN_ONLY_FAIL":inC(ti())?"RP_C30_EXPOSURE_ONLY_FAIL":"NO_CONTACT_SUPPORT_FAIL";
+  UI.status.textContent=`BF ${S.bf}/${totalBF()} · tick ${tf().toFixed(1)} · closure ${closureRemainder(tf()).toFixed(1)}/1260 · side ${sideOfTick(tf())} · beat ${beat(ti())} · BF-in-tick ${S.bf%10}/10 · R ${inR(ti())} · C30 ${inC(ti())} · Q3 ${inQ(ti())} · ${c?`b=${c.b} s=${c.s} u=${c.u}`:"b=—"} · bågar ${UI.arc0.checked?0:""}${UI.arc1.checked?1:""}${UI.arc2.checked?2:""} · ${cls} · v16 Q3-bågfilter · v12 baseline`;
+}
+function loop(ts){if(!S.playing)return;if(!S.last)S.last=ts;let delay=Math.max(10,250/Math.pow(+UI.speed.value,1.45));if(ts-S.last>=delay){S.last=ts;let inc=UI.unit.value==="bf"?1:10;if(S.bf<totalBF())setBF(S.bf+inc);else{S.playing=false;UI.play.textContent="↺";return}}requestAnimationFrame(loop)}
+UI.play.onclick=()=>{if(S.bf>=totalBF())setBF(0);S.playing=!S.playing;S.last=0;UI.play.textContent=S.playing?"⏸":"▶";if(S.playing)requestAnimationFrame(loop)};
+UI.bf1.onclick=()=>setBF(S.bf+1);UI.t1.onclick=()=>setBF(S.bf+10);UI.t7.onclick=()=>setBF(S.bf+70);UI.t21.onclick=()=>setBF(S.bf+210);UI.t70.onclick=()=>setBF(S.bf+700);UI.reset.onclick=()=>{S.playing=false;UI.play.textContent="▶";setBF(0)};UI.view.onclick=()=>{S.rx=.48;S.ry=.55;S.zoom=+UI.zoom.value;draw()};
+UI.total.onchange=e=>setT(+e.target.value);UI.bf.oninput=e=>setBF(+e.target.value);UI.zoom.oninput=e=>{S.zoom=+e.target.value;draw()};UI.tail.oninput=e=>{S.tail=+e.target.value;sync();draw()};UI.fade.oninput=e=>{S.fade=+e.target.value;draw()};
+["unit","eA","eB","pA","pB","bfDots","surfaces","ticks","Rsup","Csup","Qsup","u0","ports","rho","arc0","arc1","arc2","carrier"].forEach(id=>UI[id].onchange=draw);
+cv.onmousedown=e=>{S.drag=true;S.lx=e.clientX;S.ly=e.clientY};window.onmouseup=()=>S.drag=false;window.onmousemove=e=>{if(!S.drag)return;S.ry+=(e.clientX-S.lx)*.008;S.rx-=(e.clientY-S.ly)*.008;S.rx=Math.max(-1.45,Math.min(1.45,S.rx));S.lx=e.clientX;S.ly=e.clientY;draw()};cv.onwheel=e=>{e.preventDefault();S.zoom=Math.max(55,Math.min(360,S.zoom*(e.deltaY>0?.94:1.06)));UI.zoom.value=Math.round(S.zoom);draw()};
+window.onresize=resize;setT(1260);resize();
+})();
+</script>
+</body>
+</html>
